@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const items = [
-  { title: "Štatistiky", url: "/admin/statistics", icon: BarChart3 },
+  { title: "Štatistiky", url: "/admin", icon: BarChart3 },
   { title: "Účastníci", url: "/admin/participants", icon: Users },
 ];
 

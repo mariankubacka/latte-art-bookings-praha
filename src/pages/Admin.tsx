@@ -45,12 +45,10 @@ const Admin = () => {
 
   const getCurrentView = () => {
     const pathname = location.pathname;
-    if (pathname.includes("/statistics")) {
-      return <AdminStatistics />;
-    } else if (pathname.includes("/participants")) {
+    if (pathname === "/admin/participants") {
       return <AdminParticipants />;
     } else {
-      return <AdminStatistics />; // Default view
+      return <AdminStatistics />; // Default view for /admin
     }
   };
 
