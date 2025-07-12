@@ -223,7 +223,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 bg-primary text-primary-foreground">
+      <footer className="py-12 px-4 bg-muted-foreground text-muted">
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             {/* Company Info */}
