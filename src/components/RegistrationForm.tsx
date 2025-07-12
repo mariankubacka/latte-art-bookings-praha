@@ -45,11 +45,22 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
     setIsSubmitting(true);
 
     try {
+      // Formatujeme dátum bez timezone konverzie
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
+      console.log('🗓️ Registration Debug:');
+      console.log('Selected Date object:', selectedDate);
+      console.log('Date for DB (formatted):', dateStr);
+      console.log('ISO string (problematic):', selectedDate.toISOString().split('T')[0]);
+      
       // Check current capacity
       const { data: existingRegistrations, error: countError } = await supabase
         .from('registrations')
         .select('id')
-        .eq('course_date', selectedDate.toISOString().split('T')[0]);
+        .eq('course_date', dateStr);
 
       if (countError) throw countError;
 
@@ -66,7 +77,7 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
       const { data: existingUser, error: userError } = await supabase
         .from('registrations')
         .select('id')
-        .eq('course_date', selectedDate.toISOString().split('T')[0])
+        .eq('course_date', dateStr)
         .eq('participant_email', email.toLowerCase());
 
       if (userError) throw userError;
@@ -84,10 +95,12 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
       const { error: insertError } = await supabase
         .from('registrations')
         .insert({
-          course_date: selectedDate.toISOString().split('T')[0],
+          course_date: dateStr,
           participant_name: name.trim(),
           participant_email: email.toLowerCase().trim(),
         });
+        
+      console.log('✅ Registration successful with date:', dateStr);
 
       if (insertError) throw insertError;
 
