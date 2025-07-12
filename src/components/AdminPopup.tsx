@@ -71,14 +71,13 @@ export const AdminPopup = ({ isOpen, onOpenChange }: AdminPopupProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] p-0">
+      <DialogContent className={!isAuthenticated ? "max-w-md" : "max-w-4xl max-h-[85vh]"}>
         {!isAuthenticated ? (
-          <>
-            <DialogHeader className="p-6 pb-4">
+          <div className="p-6">
+            <DialogHeader className="mb-6">
               <DialogTitle className="text-2xl text-center">Admin prihlásenie</DialogTitle>
             </DialogHeader>
-            <div className="px-6 pb-6">
-              <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="password">Heslo</Label>
                   <Input
@@ -90,15 +89,15 @@ export const AdminPopup = ({ isOpen, onOpenChange }: AdminPopupProps) => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full">
-                  Prihlásiť sa
-                </Button>
-              </form>
-            </div>
-          </>
+              <Button type="submit" className="w-full">
+                Prihlásiť sa
+              </Button>
+            </form>
+          </div>
         ) : (
-          <SidebarProvider>
-            <div className="min-h-[80vh] flex w-full">
+          <div className="p-0">
+            <SidebarProvider>
+            <div className="min-h-[70vh] flex w-full">
               <AdminSidebar />
               <div className="flex-1 flex flex-col">
                 <header className="h-12 flex items-center justify-between border-b px-4">
@@ -111,12 +110,13 @@ export const AdminPopup = ({ isOpen, onOpenChange }: AdminPopupProps) => {
                     Odhlásiť sa
                   </Button>
                 </header>
-                <main className="flex-1 p-6 overflow-y-auto">
+                <main className="flex-1 p-4 overflow-y-auto">
                   {getCurrentView()}
                 </main>
               </div>
             </div>
-          </SidebarProvider>
+            </SidebarProvider>
+          </div>
         )}
       </DialogContent>
     </Dialog>
