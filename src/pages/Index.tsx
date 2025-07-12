@@ -29,27 +29,38 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-4xl text-center">
+      <section 
+        className="py-20 px-4 relative min-h-[80vh] flex items-center"
+        style={{
+          backgroundImage: `url('/lovable-uploads/baa00580-19f7-46c9-888d-6fe25505ec0e.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/40"></div>
+        
+        <div className="container mx-auto max-w-4xl text-center relative z-10">
           <div className="flex justify-center mb-6">
-            <Coffee className="w-16 h-16 text-primary animate-fade-in" />
+            <Coffee className="w-16 h-16 text-white animate-fade-in drop-shadow-lg" />
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground animate-fade-in">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white animate-fade-in drop-shadow-lg">
             Latte Art Kurzy v Prahe
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed animate-fade-in">
+          <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed animate-fade-in drop-shadow-lg">
             Naučte sa vytvárať krásne vzory v káve s profesionálnym baristom. 
             Každý týždeň ponúkame intenzívne kurzy latte art pre všetky úrovne.
           </p>
           
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button 
-                size="lg" 
-                className="text-lg px-8 py-6 hover-scale animate-fade-in"
-              >
-                Prihlásiť sa na kurz
-              </Button>
+            <Button 
+              size="lg" 
+              className="text-lg px-8 py-6 hover-scale animate-fade-in bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+            >
+              Prihlásiť sa na kurz
+            </Button>
             </DialogTrigger>
             <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
@@ -76,7 +87,7 @@ const Index = () => {
       </section>
 
       {/* About Section */}
-      <section className="py-16 px-4 bg-muted/30">
+      <section className="py-16 px-4 bg-secondary/30">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4 animate-fade-in">O kurzoch</h2>
@@ -174,7 +185,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 variant="secondary"
-                className="text-lg px-8 py-6 hover-scale animate-fade-in"
+                className="text-lg px-8 py-6 hover-scale animate-fade-in shadow-lg"
               >
                 Rezervovať kurz teraz
               </Button>
