@@ -102,6 +102,9 @@ export const AdminLoginPopup = ({ isOpen, onOpenChange }: AdminLoginPopupProps) 
             Prihlásiť sa
           </Button>
         </form>
+        <div className="text-center text-sm text-muted-foreground mt-4">
+          Heslo: admin123
+        </div>
       </DialogContent>
     </Dialog>
   );
