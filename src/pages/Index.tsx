@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CalendarBooking } from "@/components/CalendarBooking";
 import { RegistrationForm } from "@/components/RegistrationForm";
+import { RegistrationSuccessCard } from "@/components/RegistrationSuccessCard";
 import { AdminLoginPopup } from "@/components/AdminLoginPopup";
 import { Coffee, Users, Award, Clock, Settings } from "lucide-react";
 
@@ -12,11 +13,13 @@ const Index = () => {
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [registrationSuccess, setRegistrationSuccess] = useState<{ date: Date; name: string; email: string } | null>(null);
 
   console.log("🎯 Index component render - Dialog state:", isDialogOpen);
 
-  const handleBookingComplete = () => {
+  const handleBookingComplete = (registrationData: { date: Date; name: string; email: string }) => {
     // Nezatvárať automaticky okno - používateľ si ho môže zatvoriť manuálne
+    setRegistrationSuccess(registrationData);
     setSelectedDate(null);
     // Aktualizujeme kalendár po úspešnej rezervácii
     setRefreshKey(prev => prev + 1);
@@ -63,7 +66,14 @@ const Index = () => {
             Každý týždeň ponúkame intenzívne kurzy latte art pre všetky úrovne.
           </p>
           
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+           <Dialog open={isDialogOpen} onOpenChange={(open) => {
+             setIsDialogOpen(open);
+             if (!open) {
+               // Reset stavov pri zatvorení dialógu
+               setSelectedDate(null);
+               setRegistrationSuccess(null);
+             }
+           }}>
             <DialogTrigger asChild>
             <Button 
               size="lg" 
@@ -96,6 +106,9 @@ const Index = () => {
                     selectedDate={selectedDate}
                     onComplete={handleBookingComplete}
                   />
+                )}
+                {registrationSuccess && (
+                  <RegistrationSuccessCard registrationData={registrationSuccess} />
                 )}
               </div>
             </DialogContent>
@@ -197,7 +210,13 @@ const Index = () => {
             Vyberte si termín a staňte sa majstrom latte art!
           </p>
           
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+           <Dialog open={isDialogOpen} onOpenChange={(open) => {
+             setIsDialogOpen(open);
+             if (!open) {
+               setSelectedDate(null);
+               setRegistrationSuccess(null);
+             }
+           }}>
             <DialogTrigger asChild>
               <Button 
                 size="lg" 
