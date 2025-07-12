@@ -15,11 +15,9 @@ import { setCookie, getCookie, deleteCookie } from "@/lib/cookies";
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
   const { toast } = useToast();
   const location = useLocation();
 
-  const ADMIN_PASSWORD = "admin123"; // Simple password for demo
   const ADMIN_COOKIE_NAME = "admin_auth";
 
   // Check for existing authentication on component mount
@@ -27,37 +25,22 @@ const Admin = () => {
     const authCookie = getCookie(ADMIN_COOKIE_NAME);
     if (authCookie === "authenticated") {
       setIsAuthenticated(true);
+    } else {
+      // If not authenticated, redirect to home page
+      window.location.href = "/";
     }
   }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      // Set cookie with 24 hour expiration
-      setCookie(ADMIN_COOKIE_NAME, "authenticated", 24);
-      toast({
-        title: "Úspešne prihlásený",
-        description: "Vitajte v admin rozhraní",
-      });
-    } else {
-      toast({
-        title: "Chyba",
-        description: "Nesprávne heslo",
-        variant: "destructive",
-      });
-    }
-    setPassword("");
-  };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     // Delete the authentication cookie
     deleteCookie(ADMIN_COOKIE_NAME);
     toast({
-      title: "Odhlásený",
+      title: "Odhlásený", 
       description: "Boli ste úspešne odhlásený",
     });
+    // Redirect to home page
+    window.location.href = "/";
   };
 
   const getCurrentView = () => {
@@ -71,32 +54,13 @@ const Admin = () => {
     }
   };
 
+  // Show loading while checking authentication
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Admin prihlásenie</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">Heslo</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Zadajte admin heslo"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Prihlásiť sa
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Kontrolujem prihlásenie...</p>
+        </div>
       </div>
     );
   }
