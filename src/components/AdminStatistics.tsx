@@ -140,41 +140,48 @@ export const AdminStatistics = () => {
     <div className="space-y-6">
       {/* Celkové štatistiky */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card className="border-l-4 border-l-primary/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Celkový počet účastníkov
             </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-primary/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{registrations.length}</div>
+            <div className="text-2xl font-bold text-primary">{registrations.length}</div>
+            <p className="text-xs text-muted-foreground">Registrovaní účastníci</p>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="border-l-4 border-l-accent/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Teoretické tržby
             </CardTitle>
-            <Currency className="h-4 w-4 text-muted-foreground" />
+            <Currency className="h-4 w-4 text-accent/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-accent">
               {totalRevenue.toLocaleString("sk-SK")} Kč
             </div>
+            <p className="text-xs text-muted-foreground">Na základe registrácií</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-secondary/70">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Počet termínov
+              % využitie kurzov
             </CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <BarChart3 className="h-4 w-4 text-secondary-foreground/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dateStats.length}</div>
+            <div className="text-2xl font-bold text-secondary-foreground">
+              {Math.round((registrations.length / (10 * MAX_PARTICIPANTS_PER_DATE)) * 100)}%
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {registrations.length}/{10 * MAX_PARTICIPANTS_PER_DATE} účastníkov
+            </p>
           </CardContent>
         </Card>
       </div>

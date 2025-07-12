@@ -65,20 +65,20 @@ const Admin = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-background">
         <AdminSidebar />
         <div className="flex-1 flex flex-col">
-          <header className="h-12 flex items-center justify-between border-b px-4">
+          <header className="h-12 flex items-center justify-between border-b border-primary/20 bg-card px-4 shadow-sm">
             <div className="flex items-center gap-2">
               <SidebarTrigger />
-              <h1 className="text-xl font-bold">Admin Panel</h1>
+              <h1 className="text-xl font-bold text-primary">Admin Panel</h1>
             </div>
-            <Button onClick={handleLogout} variant="outline" size="sm">
+            <Button onClick={handleLogout} variant="outline" size="sm" className="border-primary/30 hover:bg-primary/5">
               <LogOut className="w-4 h-4 mr-2" />
               Odhlásiť sa
             </Button>
           </header>
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-6 bg-muted/20">
             {getCurrentView()}
           </main>
         </div>

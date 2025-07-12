@@ -55,14 +55,44 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const twoMonthsFromNow = new Date();
-    twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+    // Začíname 16.8.2024 a max 10 termínov
+    const startDate = new Date('2024-08-16');
+    const actualStart = today > startDate ? today : startDate;
+    
+    // Vypočítame konečný dátum na základe max 10 termínov
+    // Hľadáme 10 pracovných dní (streda-piatok) od začiatku
+    let availableDates = 0;
+    let currentDate = new Date(actualStart);
+    let endDate = new Date(actualStart);
+    
+    while (availableDates < 10) {
+      const day = currentDate.getDay();
+      if (day >= 3 && day <= 5 && !isHolidayCheck(currentDate)) { // Wed-Fri, not holiday
+        availableDates++;
+        endDate = new Date(currentDate);
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+      
+      // Safety break po 100 dňoch
+      if (currentDate.getTime() - actualStart.getTime() > 100 * 24 * 60 * 60 * 1000) {
+        break;
+      }
+    }
     
     return {
-      start: today.toISOString().split('T')[0],
-      end: twoMonthsFromNow.toISOString().split('T')[0]
+      start: actualStart.toISOString().split('T')[0],
+      end: endDate.toISOString().split('T')[0]
     };
   }, []);
+
+  // Helper funkcia pre kontrolu sviatkov bez závislosti na state
+  const isHolidayCheck = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    return czechHolidays.includes(dateStr);
+  };
 
   const fetchRegistrationCounts = useCallback(async () => {
     // Skontrolujeme cache
@@ -155,12 +185,34 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const twoMonthsFromNow = new Date();
-    twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+    const startDate = new Date('2024-08-16');
+    const actualStart = today > startDate ? today : startDate;
+    
+    // Počítame dostupné termíny od začiatku
+    let availableDates = 0;
+    let currentDate = new Date(actualStart);
+    let isWithinLimit = false;
+    
+    while (currentDate <= date && availableDates < 10) {
+      const day = currentDate.getDay();
+      if (day >= 3 && day <= 5 && !isHoliday(currentDate)) {
+        availableDates++;
+        if (currentDate.getTime() === date.getTime()) {
+          isWithinLimit = true;
+          break;
+        }
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+      
+      // Safety break po 100 dňoch
+      if (currentDate.getTime() - actualStart.getTime() > 100 * 24 * 60 * 60 * 1000) {
+        break;
+      }
+    }
     
     return (
-      date < today || 
-      date > twoMonthsFromNow || 
+      date < actualStart || 
+      !isWithinLimit ||
       !isWeekday(date) || 
       isHoliday(date) || 
       isFull(date)
@@ -284,9 +336,9 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
                 <div className="w-3 h-3 bg-destructive/20 rounded"></div>
                 <span>Sviatky / obsadené</span>
               </div>
-              <div className="flex items-center gap-2">
+               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-3 h-3 text-muted-foreground" />
-                <span>Max. 2 mesiace dopredu</span>
+                <span>Max. 10 termínov (od 16.8.)</span>
               </div>
             </div>
           </div>
