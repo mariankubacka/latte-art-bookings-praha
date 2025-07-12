@@ -78,14 +78,18 @@ export const AdminStatistics = () => {
   };
 
   const calculateStatistics = () => {
-    // Všetky dostupné termíny (10 dní od 16. júla 2025)
+    // Všetky dostupné termíny - len stredy (3), štvrtky (4) a piatky (5)
     const availableDates = [];
-    const startDate = new Date('2025-07-16');
+    const startDate = new Date('2025-07-16'); // streda
     
-    for (let i = 0; i < 10; i++) {
-      const currentDate = new Date(startDate);
-      currentDate.setDate(startDate.getDate() + i);
-      availableDates.push(currentDate.toISOString().split('T')[0]);
+    // Generuj len stredy, štvrtky a piatky
+    let currentDate = new Date(startDate);
+    while (availableDates.length < 10) {
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek === 3 || dayOfWeek === 4 || dayOfWeek === 5) { // streda, štvrtok, piatok
+        availableDates.push(currentDate.toISOString().split('T')[0]);
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
     // Štatistiky podľa dátumov - zobraz všetky termíny
