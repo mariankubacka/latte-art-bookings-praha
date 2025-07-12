@@ -1,15 +1,14 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CalendarBooking } from "@/components/CalendarBooking";
 import { RegistrationForm } from "@/components/RegistrationForm";
-import { AdminPopup } from "@/components/AdminPopup";
 import { Coffee, Users, Award, Clock, Settings } from "lucide-react";
 
 const Index = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const handleBookingComplete = () => {
@@ -21,17 +20,13 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="absolute top-4 right-4 z-10">
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={() => setIsAdminOpen(true)}
-        >
-          <Settings className="w-4 h-4 mr-2" />
-          Admin
-        </Button>
+        <Link to="/admin">
+          <Button variant="ghost" size="sm">
+            <Settings className="w-4 h-4 mr-2" />
+            Admin
+          </Button>
+        </Link>
       </header>
-
-      <AdminPopup isOpen={isAdminOpen} onOpenChange={setIsAdminOpen} />
 
       {/* Hero Section */}
       <section className="py-20 px-4">
