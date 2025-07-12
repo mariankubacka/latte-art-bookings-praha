@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { AdminStatistics } from "@/components/AdminStatistics";
 import { AdminParticipants } from "@/components/AdminParticipants";
 import { LogOut } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { setCookie, getCookie, deleteCookie } from "@/lib/cookies";
 
 
 const Admin = () => {
@@ -19,11 +20,22 @@ const Admin = () => {
   const location = useLocation();
 
   const ADMIN_PASSWORD = "admin123"; // Simple password for demo
+  const ADMIN_COOKIE_NAME = "admin_auth";
+
+  // Check for existing authentication on component mount
+  useEffect(() => {
+    const authCookie = getCookie(ADMIN_COOKIE_NAME);
+    if (authCookie === "authenticated") {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
+      // Set cookie with 24 hour expiration
+      setCookie(ADMIN_COOKIE_NAME, "authenticated", 24);
       toast({
         title: "Úspešne prihlásený",
         description: "Vitajte v admin rozhraní",
@@ -40,6 +52,8 @@ const Admin = () => {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    // Delete the authentication cookie
+    deleteCookie(ADMIN_COOKIE_NAME);
     toast({
       title: "Odhlásený",
       description: "Boli ste úspešne odhlásený",
