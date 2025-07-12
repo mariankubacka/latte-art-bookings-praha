@@ -232,7 +232,11 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
         availableDates++;
         console.log("  ✅ Valid date found:", currentDate.toLocaleDateString(), "count:", availableDates);
         
-        if (currentDate.getTime() === date.getTime()) {
+        // Porovnávame len dátum bez času
+        const currentDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+        const targetDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        
+        if (currentDateStr === targetDateStr) {
           isWithinLimit = true;
           console.log("  🎯 Target date matched! isWithinLimit =", isWithinLimit);
           break;
