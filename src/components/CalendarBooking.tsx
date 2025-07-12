@@ -130,6 +130,9 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
         counts[dateStr] = (counts[dateStr] || 0) + 1;
       });
 
+      console.log("📅 Fetched registration data:", data);
+      console.log("📅 Calculated counts:", counts);
+
       // Uložíme do cache
       registrationCache = {
         data: counts,
@@ -321,7 +324,9 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
                       const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
                       const day = String(selectedDate.getDate()).padStart(2, '0');
                       const dateStr = `${year}-${month}-${day}`;
-                      return registrationCounts[dateStr] || 0;
+                      const count = registrationCounts[dateStr] || 0;
+                      console.log("📅 Displaying count for", dateStr, ":", count, "registrationCounts:", registrationCounts);
+                      return count;
                     })()}/5
                   </span>
                 </div>
