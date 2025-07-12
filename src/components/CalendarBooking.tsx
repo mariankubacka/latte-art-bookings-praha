@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,20 +41,45 @@ const czechHolidays = [
   "2025-12-26", // Druhý sviatok vianočný
 ];
 
+// Cache pre registrácie - uložíme si dáta aby sa nemuseli načítavať znovu
+let registrationCache: { data: Record<string, number>; timestamp: number } | null = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minút
+
 export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingProps) {
   const [registrationCounts, setRegistrationCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchRegistrationCounts();
+  // Memoizujeme dátumové rozsahy pre lepšiu výkonnosť
+  const dateRange = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const twoMonthsFromNow = new Date();
+    twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+    
+    return {
+      start: today.toISOString().split('T')[0],
+      end: twoMonthsFromNow.toISOString().split('T')[0]
+    };
   }, []);
 
-  const fetchRegistrationCounts = async () => {
+  const fetchRegistrationCounts = useCallback(async () => {
+    // Skontrolujeme cache
+    const now = Date.now();
+    if (registrationCache && (now - registrationCache.timestamp) < CACHE_DURATION) {
+      setRegistrationCounts(registrationCache.data);
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      // Optimalizovaný dotaz - iba relevantné dátumy pre nadchádzajúce 2 mesiace
       const { data, error } = await supabase
         .from('registrations')
-        .select('course_date');
+        .select('course_date')
+        .gte('course_date', dateRange.start)
+        .lte('course_date', dateRange.end);
 
       if (error) throw error;
 
@@ -63,6 +88,12 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
         const dateStr = registration.course_date;
         counts[dateStr] = (counts[dateStr] || 0) + 1;
       });
+
+      // Uložíme do cache
+      registrationCache = {
+        data: counts,
+        timestamp: now
+      };
 
       setRegistrationCounts(counts);
     } catch (error) {
@@ -75,7 +106,11 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dateRange, toast]);
+
+  useEffect(() => {
+    fetchRegistrationCounts();
+  }, [fetchRegistrationCounts]);
 
   const isWeekday = (date: Date) => {
     const day = date.getDay();
@@ -92,7 +127,7 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     return (registrationCounts[dateStr] || 0) >= 5;
   };
 
-  const isDateDisabled = (date: Date) => {
+  const isDateDisabled = useCallback((date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -106,7 +141,7 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
       isHoliday(date) || 
       isFull(date)
     );
-  };
+  }, [registrationCounts]);
 
   const getDateBadge = (date: Date) => {
     const dateStr = date.toISOString().split('T')[0];
