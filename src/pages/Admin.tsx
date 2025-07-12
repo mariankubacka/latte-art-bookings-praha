@@ -71,7 +71,7 @@ const Admin = () => {
           <header className="h-12 flex items-center justify-between border-b border-primary/20 bg-card px-4 shadow-sm">
             <div className="flex items-center gap-2">
               <SidebarTrigger />
-              <h1 className="text-xl font-bold text-primary">Admin Panel</h1>
+              <h1 className="text-xl font-bold">Admin Panel</h1>
             </div>
             <Button onClick={handleLogout} variant="outline" size="sm" className="border-primary/30 hover:bg-primary/5">
               <LogOut className="w-4 h-4 mr-2" />

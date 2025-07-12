@@ -25,7 +25,7 @@ export function AdminSidebar() {
     <Sidebar className={`${collapsed ? "w-14" : "w-60"} border-r border-primary/20 bg-card shadow-sm`} collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-primary font-semibold">Admin Panel</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-semibold">Admin Panel</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -34,7 +34,7 @@ export function AdminSidebar() {
                     <NavLink 
                       to={item.url} 
                       className={({ isActive }) =>
-                        isActive ? "bg-primary/10 text-primary border-r-2 border-r-primary font-medium" : "hover:bg-muted/30"
+                        isActive ? "bg-muted border-r-2 border-r-primary/50 font-medium" : "hover:bg-muted/50"
                       }
                     >
                       <item.icon className="mr-2 h-4 w-4" />
