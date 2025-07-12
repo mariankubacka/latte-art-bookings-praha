@@ -22,10 +22,15 @@ const Admin = () => {
 
   // Check for existing authentication on component mount
   useEffect(() => {
+    console.log("🔍 Admin page: Checking authentication");
     const authCookie = getCookie(ADMIN_COOKIE_NAME);
+    console.log("🍪 Auth cookie value:", authCookie);
+    
     if (authCookie === "authenticated") {
+      console.log("✅ User is authenticated, allowing access");
       setIsAuthenticated(true);
     } else {
+      console.log("❌ User not authenticated, redirecting to home");
       // If not authenticated, redirect to home page
       window.location.href = "/";
     }

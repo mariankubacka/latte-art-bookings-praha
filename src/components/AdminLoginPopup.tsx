@@ -22,17 +22,48 @@ export const AdminLoginPopup = ({ isOpen, onOpenChange }: AdminLoginPopupProps) 
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🔐 Login attempt with password:", password);
+    console.log("🔐 Expected password:", ADMIN_PASSWORD);
+    console.log("🔐 Password match:", password === ADMIN_PASSWORD);
+    
     if (password === ADMIN_PASSWORD) {
-      // Set cookie with 24 hour expiration
-      setCookie(ADMIN_COOKIE_NAME, "authenticated", 24);
-      toast({
-        title: "Úspešne prihlásený",
-        description: "Presmerovávame vás do admin panelu",
-      });
-      onOpenChange(false);
-      // Redirect to admin page
-      navigate("/admin");
+      console.log("✅ Password correct, setting cookie");
+      
+      try {
+        // Set cookie with 24 hour expiration
+        setCookie(ADMIN_COOKIE_NAME, "authenticated", 24);
+        console.log("✅ Cookie set successfully");
+        
+        // Verify cookie was set
+        const cookieValue = document.cookie
+          .split('; ')
+          .find(row => row.startsWith(ADMIN_COOKIE_NAME + '='));
+        console.log("🍪 Cookie verification:", cookieValue);
+        
+        toast({
+          title: "Úspešne prihlásený",
+          description: "Presmerovávame vás do admin panelu",
+        });
+        
+        console.log("🔄 Closing dialog and navigating");
+        onOpenChange(false);
+        
+        // Add small delay before navigation
+        setTimeout(() => {
+          console.log("🔄 Navigating to /admin");
+          navigate("/admin");
+        }, 100);
+        
+      } catch (error) {
+        console.error("❌ Error during login process:", error);
+        toast({
+          title: "Chyba",
+          description: "Nastala chyba pri prihlasovaní",
+          variant: "destructive",
+        });
+      }
     } else {
+      console.log("❌ Incorrect password");
       toast({
         title: "Chyba",
         description: "Nesprávne heslo",
