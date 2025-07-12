@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CalendarBooking } from "@/components/CalendarBooking";
 import { RegistrationForm } from "@/components/RegistrationForm";
-import { Coffee, Users, Award, Clock } from "lucide-react";
+import { Coffee, Users, Award, Clock, Settings } from "lucide-react";
 
 const Index = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -17,6 +18,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="absolute top-4 right-4 z-10">
+        <Link to="/admin">
+          <Button variant="ghost" size="sm">
+            <Settings className="w-4 h-4 mr-2" />
+            Admin
+          </Button>
+        </Link>
+      </header>
+
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
