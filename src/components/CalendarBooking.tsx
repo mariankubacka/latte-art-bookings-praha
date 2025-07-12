@@ -199,6 +199,7 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     const isValidWeekday = dayOfWeek >= 3 && dayOfWeek <= 5; // Wed-Fri
     const isNotHoliday = !isHoliday(date);
     const isNotFull = !isFull(date);
+    // Dátum je dostupný ak je od 16. júla 2025 naďalej
     const isNotPast = date >= actualStart;
     
     console.log("🗓️ Date check for", date.toLocaleDateString(), {
