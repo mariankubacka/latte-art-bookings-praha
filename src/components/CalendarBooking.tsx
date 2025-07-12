@@ -199,7 +199,7 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     const isValidWeekday = dayOfWeek >= 3 && dayOfWeek <= 5; // Wed-Fri
     const isNotHoliday = !isHoliday(date);
     const isNotFull = !isFull(date);
-    // Dátum je dostupný ak je od 16. júla 2025 naďalej
+    // Dátum je dostupný ak je od 16. júla 2025 naďalej (vrátane 16. júla)
     const isNotPast = date >= actualStart;
     
     console.log("🗓️ Date check for", date.toLocaleDateString(), {
@@ -222,12 +222,19 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     let currentDate = new Date(actualStart);
     let isWithinLimit = false;
     
+    console.log("🔍 Checking isWithinLimit for", date.toLocaleDateString(), "starting from", actualStart.toLocaleDateString());
+    
     while (currentDate <= date && availableDates < 10) {
       const day = currentDate.getDay();
-      if (day >= 3 && day <= 5 && !isHolidayCheck(currentDate)) {
+      const isValidDay = day >= 3 && day <= 5 && !isHolidayCheck(currentDate);
+      
+      if (isValidDay) {
         availableDates++;
+        console.log("  ✅ Valid date found:", currentDate.toLocaleDateString(), "count:", availableDates);
+        
         if (currentDate.getTime() === date.getTime()) {
           isWithinLimit = true;
+          console.log("  🎯 Target date matched! isWithinLimit =", isWithinLimit);
           break;
         }
       }
@@ -235,9 +242,12 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
       
       // Safety break po 100 dňoch
       if (currentDate.getTime() - actualStart.getTime() > 100 * 24 * 60 * 60 * 1000) {
+        console.log("  ⚠️ Safety break triggered");
         break;
       }
     }
+    
+    console.log("🔍 isWithinLimit result:", isWithinLimit, "for", date.toLocaleDateString());
     
     const shouldDisable = (
       !isNotPast || 
