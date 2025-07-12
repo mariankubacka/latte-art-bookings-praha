@@ -225,30 +225,19 @@ const Index = () => {
       {/* Footer */}
       <footer className="py-12 px-4 bg-slate-900 text-slate-100">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
             {/* Company Info */}
-            <div>
-              <h3 className="text-xl font-bold mb-4 flex items-center">
+            <div className="text-center md:text-left">
+              <h3 className="text-xl font-bold mb-4 flex items-center justify-center md:justify-start">
                 <Coffee className="w-6 h-6 mr-2" />
                 Latte Art Kurzy Praha
               </h3>
-              <p className="text-primary-foreground/80 mb-4">
+              <p className="text-slate-300 mb-4">
                 Profesionálne kurzy latte art v srdci Prahy. Naučte sa vytvárať úžasné vzory v káve pod vedením skúsených baristov.
               </p>
-              <p className="text-sm text-primary-foreground/60">
+              <p className="text-sm text-slate-400">
                 Streda - Piatok: 9:00 - 17:00
               </p>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Rýchle odkazy</h4>
-              <ul className="space-y-2 text-primary-foreground/80">
-                <li>• Základné techniky</li>
-                <li>• Pokročilé vzory</li>
-                <li>• Skúsení školitelia</li>
-                <li>• Rezervácia kurzu</li>
-              </ul>
             </div>
 
             {/* Social Media */}
@@ -276,7 +265,7 @@ const Index = () => {
                   </svg>
                 </a>
               </div>
-              <p className="text-sm text-primary-foreground/60">
+              <p className="text-sm text-slate-400">
                 📧 info@latteartpraha.sk<br />
                 📞 +420 123 456 789
               </p>
