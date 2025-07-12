@@ -157,7 +157,7 @@ const Index = () => {
             <h2 className="text-3xl font-bold mb-4 animate-fade-in">Na čo sa môžete tešiť</h2>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto items-start justify-center">
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <div className="animate-fade-in">
               <h3 className="text-xl font-semibold mb-4">Základné techniky</h3>
               <ul className="space-y-2 text-muted-foreground">
@@ -175,6 +175,16 @@ const Index = () => {
                 <li>• Labuť a ďalšie zvieratá</li>
                 <li>• Vlastné kreatívne návrhy</li>
                 <li>• Tipy pre domáce používanie</li>
+              </ul>
+            </div>
+
+            <div className="animate-fade-in">
+              <h3 className="text-xl font-semibold mb-4">Skúsení školitelia</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li>• Viac ako 10 rokov praxe</li>
+                <li>• Absolventi medzinárodných kurzov</li>
+                <li>• Víťazi baristských súťaží</li>
+                <li>• Individuálny prístup ku každému</li>
               </ul>
             </div>
           </div>
