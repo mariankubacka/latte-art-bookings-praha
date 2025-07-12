@@ -205,7 +205,8 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
       isValidWeekday,
       isNotHoliday,
       isNotFull,
-      isNotPast
+      isNotPast,
+      dateString: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
     });
     
     // Ak nie je to správny deň v týždni, okamžite zakážeme
