@@ -64,9 +64,13 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Začíname 16.8.2024 a max 10 termínov
+    // Začíname 16.8.2024, ale pre budúce dátumy umožníme aj registrácie od včera
     const startDate = new Date('2024-08-16');
-    const actualStart = today > startDate ? today : startDate;
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0, 0, 0, 0);
+    
+    const actualStart = yesterday > startDate ? yesterday : startDate;
     
     // Vypočítame konečný dátum na základe max 10 termínov
     // Hľadáme 10 pracovných dní (streda-piatok) od začiatku
@@ -191,7 +195,11 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     today.setHours(0, 0, 0, 0);
     
     const startDate = new Date('2024-08-16');
-    const actualStart = today > startDate ? today : startDate;
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0, 0, 0, 0);
+    
+    const actualStart = yesterday > startDate ? yesterday : startDate;
     
     // Najskôr skontrolujme základné podmienky
     const dayOfWeek = date.getDay();
