@@ -50,6 +50,15 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
+  // Helper funkcia pre kontrolu sviatkov - definujeme na začiatku
+  const isHolidayCheck = useCallback((date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    return czechHolidays.includes(dateStr);
+  }, []);
+
   // Memoizujeme dátumové rozsahy pre lepšiu výkonnosť
   const dateRange = useMemo(() => {
     const today = new Date();
@@ -83,16 +92,8 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
       start: actualStart.toISOString().split('T')[0],
       end: endDate.toISOString().split('T')[0]
     };
-  }, []);
+  }, [isHolidayCheck]);
 
-  // Helper funkcia pre kontrolu sviatkov bez závislosti na state
-  const isHolidayCheck = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${day}`;
-    return czechHolidays.includes(dateStr);
-  };
 
   const fetchRegistrationCounts = useCallback(async () => {
     // Skontrolujeme cache
@@ -163,14 +164,14 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     return day >= 3 && day <= 5; // Wednesday (3) to Friday (5)
   };
 
-  const isHoliday = (date: Date) => {
+  const isHoliday = useCallback((date: Date) => {
     // Safari-friendly date formatting - použitie lokálneho času
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
     return czechHolidays.includes(dateStr);
-  };
+  }, []);
 
   const isFull = (date: Date) => {
     // Safari-friendly date formatting
@@ -195,7 +196,7 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     
     while (currentDate <= date && availableDates < 10) {
       const day = currentDate.getDay();
-      if (day >= 3 && day <= 5 && !isHoliday(currentDate)) {
+      if (day >= 3 && day <= 5 && !isHolidayCheck(currentDate)) {
         availableDates++;
         if (currentDate.getTime() === date.getTime()) {
           isWithinLimit = true;
@@ -217,7 +218,7 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
       isHoliday(date) || 
       isFull(date)
     );
-  }, [registrationCounts]);
+  }, [registrationCounts, isHolidayCheck, isHoliday]);
 
   const getDateBadge = (date: Date) => {
     // Safari-friendly date formatting
