@@ -162,10 +162,11 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     fetchRegistrationCounts();
   }, [fetchRegistrationCounts]);
 
-  const isWeekday = (date: Date) => {
+  const isWeekday = useCallback((date: Date) => {
     const day = date.getDay();
+    console.log("🗓️ Checking weekday for", date.toLocaleDateString(), "day:", day, "isValid:", (day >= 3 && day <= 5));
     return day >= 3 && day <= 5; // Wednesday (3) to Friday (5)
-  };
+  }, []);
 
   const isHoliday = useCallback((date: Date) => {
     // Safari-friendly date formatting - použitie lokálneho času
@@ -192,6 +193,27 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     const startDate = new Date('2024-08-16');
     const actualStart = today > startDate ? today : startDate;
     
+    // Najskôr skontrolujme základné podmienky
+    const dayOfWeek = date.getDay();
+    const isValidWeekday = dayOfWeek >= 3 && dayOfWeek <= 5; // Wed-Fri
+    const isNotHoliday = !isHoliday(date);
+    const isNotFull = !isFull(date);
+    const isNotPast = date >= actualStart;
+    
+    console.log("🗓️ Date check for", date.toLocaleDateString(), {
+      dayOfWeek,
+      isValidWeekday,
+      isNotHoliday,
+      isNotFull,
+      isNotPast
+    });
+    
+    // Ak nie je to správny deň v týždni, okamžite zakážeme
+    if (!isValidWeekday) {
+      console.log("❌ Date disabled - not Wed-Fri");
+      return true;
+    }
+    
     // Počítame dostupné termíny od začiatku
     let availableDates = 0;
     let currentDate = new Date(actualStart);
@@ -214,14 +236,18 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
       }
     }
     
-    return (
-      date < actualStart || 
+    const shouldDisable = (
+      !isNotPast || 
       !isWithinLimit ||
-      !isWeekday(date) || 
-      isHoliday(date) || 
-      isFull(date)
+      !isValidWeekday || 
+      !isNotHoliday || 
+      !isNotFull
     );
-  }, [registrationCounts, isHolidayCheck, isHoliday]);
+    
+    console.log("🗓️ Final decision for", date.toLocaleDateString(), "disabled:", shouldDisable);
+    
+    return shouldDisable;
+  }, [registrationCounts, isHolidayCheck, isHoliday, isFull]);
 
   const getDateBadge = (date: Date) => {
     // Safari-friendly date formatting
