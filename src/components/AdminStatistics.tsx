@@ -42,9 +42,7 @@ export const AdminStatistics = () => {
   }, []);
 
   useEffect(() => {
-    if (registrations.length > 0) {
-      calculateStatistics();
-    }
+    calculateStatistics();
   }, [registrations]);
 
   const fetchRegistrations = async () => {
@@ -80,7 +78,17 @@ export const AdminStatistics = () => {
   };
 
   const calculateStatistics = () => {
-    // Štatistiky podľa dátumov
+    // Všetky dostupné termíny (10 dní od 16. júla 2025)
+    const availableDates = [];
+    const startDate = new Date('2025-07-16');
+    
+    for (let i = 0; i < 10; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      availableDates.push(currentDate.toISOString().split('T')[0]);
+    }
+
+    // Štatistiky podľa dátumov - zobraz všetky termíny
     const dateGroups = registrations.reduce((groups, registration) => {
       const date = registration.course_date;
       if (!groups[date]) {
@@ -90,10 +98,10 @@ export const AdminStatistics = () => {
       return groups;
     }, {} as Record<string, Registration[]>);
 
-    const dateStatsData = Object.entries(dateGroups).map(([date, regs]) => ({
+    const dateStatsData = availableDates.map((date) => ({
       date,
-      count: regs.length,
-      percentage: Math.round((regs.length / MAX_PARTICIPANTS_PER_DATE) * 100),
+      count: dateGroups[date]?.length || 0,
+      percentage: Math.round(((dateGroups[date]?.length || 0) / MAX_PARTICIPANTS_PER_DATE) * 100),
     }));
 
     setDateStats(dateStatsData);
