@@ -11,12 +11,15 @@ const Index = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   console.log("🎯 Index component render - Dialog state:", isDialogOpen);
 
   const handleBookingComplete = () => {
     // Nezatvárať automaticky okno - používateľ si ho môže zatvoriť manuálne
     setSelectedDate(null);
+    // Aktualizujeme kalendár po úspešnej rezervácii
+    setRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -84,6 +87,7 @@ const Index = () => {
               
               <div className="grid lg:grid-cols-2 gap-6 p-4">
                 <CalendarBooking 
+                  key={refreshKey}
                   selectedDate={selectedDate}
                   onDateSelect={setSelectedDate}
                 />

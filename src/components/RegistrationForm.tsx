@@ -100,8 +100,10 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
         duration: 2000, // Toast zmizne po 2 sekundách
       });
 
-      // Nevoláme onComplete() - okno zostane otvorené
-      // Užívateľ ho musí zatvoriť manuálne
+      // Zavoláme onComplete aby sa aktualizoval kalendár
+      onComplete();
+
+      // Nevoláme zatvorenie okna - okno zostane otvorené
 
     } catch (error) {
       console.error('Registration error:', error);
