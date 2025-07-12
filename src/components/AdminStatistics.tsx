@@ -148,7 +148,7 @@ export const AdminStatistics = () => {
             <Users className="h-4 w-4 text-primary/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">{registrations.length}</div>
+            <div className="text-2xl font-bold">{registrations.length}</div>
             <p className="text-xs text-muted-foreground">Registrovaní účastníci</p>
           </CardContent>
         </Card>
@@ -161,7 +161,7 @@ export const AdminStatistics = () => {
             <Currency className="h-4 w-4 text-accent/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-accent">
+            <div className="text-2xl font-bold">
               {totalRevenue.toLocaleString("sk-SK")} Kč
             </div>
             <p className="text-xs text-muted-foreground">Na základe registrácií</p>
@@ -176,7 +176,7 @@ export const AdminStatistics = () => {
             <BarChart3 className="h-4 w-4 text-secondary-foreground/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-secondary-foreground">
+            <div className="text-2xl font-bold">
               {Math.round((registrations.length / (10 * MAX_PARTICIPANTS_PER_DATE)) * 100)}%
             </div>
             <p className="text-xs text-muted-foreground">
