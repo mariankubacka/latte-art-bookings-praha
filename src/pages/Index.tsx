@@ -12,7 +12,7 @@ const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const handleBookingComplete = () => {
-    setIsDialogOpen(false);
+    // Nezatvárať automaticky okno - používateľ si ho môže zatvoriť manuálne
     setSelectedDate(null);
   };
 
