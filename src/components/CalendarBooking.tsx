@@ -11,37 +11,7 @@ interface CalendarBookingProps {
   onDateSelect: (date: Date | null) => void;
 }
 
-// Czech holidays for 2024-2025
-const czechHolidays = [
-  "2024-01-01", // Nový rok
-  "2024-03-29", // Veľký piatok
-  "2024-04-01", // Veľkonočný pondelok
-  "2024-05-01", // Sviatok práce
-  "2024-05-08", // Deň víťazstva
-  "2024-07-05", // Sv. Cyril a Metod
-  "2024-07-06", // Upálenie Jana Husa
-  "2024-09-28", // Deň českej štátnosti
-  "2024-10-28", // Vznik Československej republiky
-  "2024-11-17", // Deň boja za slobodu a demokraciu
-  "2024-12-24", // Štedrý deň
-  "2024-12-25", // Vianoce
-  "2024-12-26", // Druhý sviatok vianočný
-  "2025-01-01", // Nový rok
-  "2025-04-18", // Veľký piatok
-  "2025-04-21", // Veľkonočný pondelok
-  "2025-05-01", // Sviatok práce
-  "2025-05-08", // Deň víťazstva
-  "2025-07-05", // Sv. Cyril a Metod
-  "2025-07-06", // Upálenie Jana Husa
-  "2025-09-28", // Deň českej štátnosti
-  "2025-10-28", // Vznik Československej republiky
-  "2025-11-17", // Deň boja za slobodu a demokraciu
-  "2025-12-24", // Štedrý deň
-  "2025-12-25", // Vianoce
-  "2025-12-26", // Druhý sviatok vianočný
-];
-
-// Cache pre registrácie - uložíme si dáta aby sa nemuseli načítavať znovu
+// Cache pre registrácie
 let registrationCache: { data: Record<string, number>; timestamp: number } | null = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minút
 
@@ -50,50 +20,17 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Helper funkcia pre kontrolu sviatkov - definujeme na začiatku
-  const isHolidayCheck = useCallback((date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${day}`;
-    return czechHolidays.includes(dateStr);
-  }, []);
-
-  // Memoizujeme dátumové rozsahy pre lepšiu výkonnosť
+  // Jednoduché dátumové rozsahy - kalendár zobrazuje rok do budúcnosti
   const dateRange = useMemo(() => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Prvý dostupný termín je 16. júla 2025
-    const startDate = new Date('2025-07-16');
-    const actualStart = startDate; // Vždy začíname od 16. júla 2025
-    
-    // Vypočítame konečný dátum na základe max 10 termínov
-    // Hľadáme 10 pracovných dní (streda-piatok) od začiatku
-    let availableDates = 0;
-    let currentDate = new Date(actualStart);
-    let endDate = new Date(actualStart);
-    
-    while (availableDates < 10) {
-      const day = currentDate.getDay();
-      if (day >= 3 && day <= 5 && !isHolidayCheck(currentDate)) { // Wed-Fri, not holiday
-        availableDates++;
-        endDate = new Date(currentDate);
-      }
-      currentDate.setDate(currentDate.getDate() + 1);
-      
-      // Safety break po 100 dňoch
-      if (currentDate.getTime() - actualStart.getTime() > 100 * 24 * 60 * 60 * 1000) {
-        break;
-      }
-    }
+    const oneYearFromNow = new Date();
+    oneYearFromNow.setFullYear(today.getFullYear() + 1);
     
     return {
-      start: actualStart.toISOString().split('T')[0],
-      end: endDate.toISOString().split('T')[0]
+      start: today.toISOString().split('T')[0],
+      end: oneYearFromNow.toISOString().split('T')[0]
     };
-  }, [isHolidayCheck]);
-
+  }, []);
 
   const fetchRegistrationCounts = useCallback(async () => {
     // Skontrolujeme cache
@@ -105,33 +42,19 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     }
 
     try {
-      // Safari-friendly fetch s explicitným timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
-      
-      // Optimalizovaný dotaz - iba relevantné dátumy pre nadchádzajúce 2 mesiace
       const { data, error } = await supabase
         .from('registrations')
         .select('course_date')
         .gte('course_date', dateRange.start)
-        .lte('course_date', dateRange.end)
-        .abortSignal(controller.signal);
-
-      clearTimeout(timeoutId);
+        .lte('course_date', dateRange.end);
       
-      if (error) {
-        console.error('Calendar fetch error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       const counts: Record<string, number> = {};
       data.forEach((registration) => {
         const dateStr = registration.course_date;
         counts[dateStr] = (counts[dateStr] || 0) + 1;
       });
-
-      console.log("📅 Fetched registration data:", data);
-      console.log("📅 Calculated counts:", counts);
 
       // Uložíme do cache
       registrationCache = {
@@ -142,15 +65,9 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
       setRegistrationCounts(counts);
     } catch (error: any) {
       console.error('Error fetching registrations:', error);
-      
-      // Safari-specific error handling
-      const errorMessage = error?.name === 'AbortError' 
-        ? "Načítanie kalendára trvá príliš dlho. Skúste obnoviť stránku."
-        : "Nepodarilo sa načítať údaje o kapacite kurzov.";
-        
       toast({
         title: "Chyba",
-        description: errorMessage,
+        description: "Nepodarilo sa načítať údaje o kapacite kurzov.",
         variant: "destructive",
       });
     } finally {
@@ -162,23 +79,8 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     fetchRegistrationCounts();
   }, [fetchRegistrationCounts]);
 
-  const isWeekday = useCallback((date: Date) => {
-    const day = date.getDay();
-    console.log("🗓️ Checking weekday for", date.toLocaleDateString(), "day:", day, "isValid:", (day >= 3 && day <= 5));
-    return day >= 3 && day <= 5; // Wednesday (3) to Friday (5)
-  }, []);
-
-  const isHoliday = useCallback((date: Date) => {
-    // Safari-friendly date formatting - použitie lokálneho času
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${day}`;
-    return czechHolidays.includes(dateStr);
-  }, []);
-
+  // Funkcia na kontrolu či je deň plný
   const isFull = (date: Date) => {
-    // Safari-friendly date formatting
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -186,100 +88,17 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     return (registrationCounts[dateStr] || 0) >= 5;
   };
 
+  // TABULA RASA - jediné obmedzenie je kapacita 5 účastníkov
   const isDateDisabled = useCallback((date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Prvý dostupný termín je 16. júla 2025
-    const startDate = new Date('2025-07-16');
-    const actualStart = startDate; // Vždy začíname od 16. júla 2025
-    
-    // Najskôr skontrolujme základné podmienky
-    const dayOfWeek = date.getDay();
-    const isValidWeekday = dayOfWeek >= 3 && dayOfWeek <= 5; // Wed-Fri
-    const isNotHoliday = !isHoliday(date);
-    const isNotFull = !isFull(date);
-    
-    // Porovnávame len dátum bez času pre isNotPast
-    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const startOnly = new Date(actualStart.getFullYear(), actualStart.getMonth(), actualStart.getDate());
-    const isNotPast = dateOnly >= startOnly;
-    
-    console.log("🗓️ Date check for", date.toLocaleDateString(), {
-      dayOfWeek,
-      isValidWeekday,
-      isNotHoliday,
-      isNotFull,
-      isNotPast,
-      dateString: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-    });
-    
-    // Ak nie je to správny deň v týždni, okamžite zakážeme
-    if (!isValidWeekday) {
-      console.log("❌ Date disabled - not Wed-Fri");
-      return true;
-    }
-    
-    // Počítame dostupné termíny od začiatku
-    let availableDates = 0;
-    let currentDate = new Date(actualStart);
-    let isWithinLimit = false;
-    
-    console.log("🔍 Checking isWithinLimit for", date.toLocaleDateString(), "starting from", actualStart.toLocaleDateString());
-    
-    while (currentDate <= date && availableDates < 10) {
-      const day = currentDate.getDay();
-      const isValidDay = day >= 3 && day <= 5 && !isHolidayCheck(currentDate);
-      
-      if (isValidDay) {
-        availableDates++;
-        console.log("  ✅ Valid date found:", currentDate.toLocaleDateString(), "count:", availableDates);
-        
-        // Porovnávame len dátum bez času
-        const currentDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
-        const targetDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        
-        if (currentDateStr === targetDateStr) {
-          isWithinLimit = true;
-          console.log("  🎯 Target date matched! isWithinLimit =", isWithinLimit);
-          break;
-        }
-      }
-      currentDate.setDate(currentDate.getDate() + 1);
-      
-      // Safety break po 100 dňoch
-      if (currentDate.getTime() - actualStart.getTime() > 100 * 24 * 60 * 60 * 1000) {
-        console.log("  ⚠️ Safety break triggered");
-        break;
-      }
-    }
-    
-    console.log("🔍 isWithinLimit result:", isWithinLimit, "for", date.toLocaleDateString());
-    
-    const shouldDisable = (
-      !isNotPast || 
-      !isWithinLimit ||
-      !isValidWeekday || 
-      !isNotHoliday || 
-      !isNotFull
-    );
-    
-    console.log("🗓️ Final decision for", date.toLocaleDateString(), "disabled:", shouldDisable);
-    
-    return shouldDisable;
-  }, [registrationCounts, isHolidayCheck, isHoliday, isFull]);
+    return isFull(date); // Zakázané len ak je plný
+  }, [registrationCounts]);
 
   const getDateBadge = (date: Date) => {
-    // Safari-friendly date formatting
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
     const count = registrationCounts[dateStr] || 0;
-    
-    if (isHoliday(date)) {
-      return <Badge variant="destructive" className="text-xs">Sviatok</Badge>;
-    }
     
     if (count >= 5) {
       return <Badge variant="destructive" className="text-xs">Obsadené</Badge>;
@@ -293,29 +112,18 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (!date) {
-      onDateSelect(null);
-      return;
-    }
-
-    if (isHoliday(date)) {
-      toast({
-        title: "Štátny sviatok",
-        description: "Tento deň je štátny sviatok. Kurzy sa vtedy nekonajú.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    if (!date) return;
+    
+    // Jednoduchá kontrola - len či nie je plný
     if (isFull(date)) {
       toast({
         title: "Kurz je obsadený",
-        description: "Na tento deň je už obsadených 5 miest. Vyberte si iný termín.",
+        description: "Na tento deň je už obsadených 5 miest.",
         variant: "destructive",
       });
       return;
     }
-
+    
     onDateSelect(date);
   };
 
@@ -327,7 +135,7 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
           Vyberte termín kurzu
         </CardTitle>
         <CardDescription>
-          Kurzy sa konajú v stredu, štvrtok a piatok od 9:00 do 17:00
+          Vyberte si ľubovoľný deň pre váš kurz latte art
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -370,9 +178,7 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
                       const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
                       const day = String(selectedDate.getDate()).padStart(2, '0');
                       const dateStr = `${year}-${month}-${day}`;
-                      const count = registrationCounts[dateStr] || 0;
-                      console.log("📅 Displaying count for", dateStr, ":", count, "registrationCounts:", registrationCounts);
-                      return count;
+                      return registrationCounts[dateStr] || 0;
                     })()}/5
                   </span>
                 </div>
@@ -382,15 +188,15 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
             <div className="text-xs text-muted-foreground space-y-1">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-muted rounded"></div>
-                <span>Dostupné dni (St-Pi)</span>
+                <span>Dostupné dni</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-destructive/20 rounded"></div>
-                <span>Sviatky / obsadené</span>
+                <span>Obsadené (5/5)</span>
               </div>
                <div className="flex items-center gap-2">
                 <AlertTriangle className="w-3 h-3 text-muted-foreground" />
-                <span>Max. 10 termínov (od 16.7.2025)</span>
+                <span>Môžete vybrať ľubovoľný dátum</span>
                </div>
             </div>
           </div>
