@@ -7,33 +7,32 @@ import { RegistrationForm } from "@/components/RegistrationForm";
 import { RegistrationSuccessCard } from "@/components/RegistrationSuccessCard";
 import { AdminLoginPopup } from "@/components/AdminLoginPopup";
 import { Coffee, Users, Award, Clock, Settings } from "lucide-react";
-
 const Index = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [registrationSuccess, setRegistrationSuccess] = useState<{ date: Date; name: string; email: string } | null>(null);
-
+  const [registrationSuccess, setRegistrationSuccess] = useState<{
+    date: Date;
+    name: string;
+    email: string;
+  } | null>(null);
   console.log("🎯 Index component render - Dialog state:", isDialogOpen);
-
-  const handleBookingComplete = (registrationData: { date: Date; name: string; email: string }) => {
+  const handleBookingComplete = (registrationData: {
+    date: Date;
+    name: string;
+    email: string;
+  }) => {
     // Nezatvárať automaticky okno - používateľ si ho môže zatvoriť manuálne
     setRegistrationSuccess(registrationData);
     setSelectedDate(null);
     // Aktualizujeme kalendár po úspešnej rezervácii
     setRefreshKey(prev => prev + 1);
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="absolute top-4 right-4 z-10">
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={() => setIsAdminLoginOpen(true)}
-        >
+        <Button variant="ghost" size="sm" onClick={() => setIsAdminLoginOpen(true)}>
           <Settings className="w-4 h-4 mr-2" />
           Admin
         </Button>
@@ -42,15 +41,12 @@ const Index = () => {
       <AdminLoginPopup isOpen={isAdminLoginOpen} onOpenChange={setIsAdminLoginOpen} />
 
       {/* Hero Section */}
-      <section 
-        className="py-20 px-4 relative min-h-[80vh] flex items-center"
-        style={{
-          backgroundImage: `url('/lovable-uploads/baa00580-19f7-46c9-888d-6fe25505ec0e.png')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      >
+      <section className="py-20 px-4 relative min-h-[80vh] flex items-center" style={{
+      backgroundImage: `url('/lovable-uploads/baa00580-19f7-46c9-888d-6fe25505ec0e.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }}>
         {/* Dark overlay for readability */}
         <div className="absolute inset-0 bg-black/40"></div>
         
@@ -66,25 +62,21 @@ const Index = () => {
             Každý týždeň ponúkame intenzívne kurzy latte art pre všetky úrovne.
           </p>
           
-           <Dialog open={isDialogOpen} onOpenChange={(open) => {
-             setIsDialogOpen(open);
-             if (!open) {
-               // Reset stavov pri zatvorení dialógu
-               setSelectedDate(null);
-               setRegistrationSuccess(null);
-             }
-           }}>
+           <Dialog open={isDialogOpen} onOpenChange={open => {
+          setIsDialogOpen(open);
+          if (!open) {
+            // Reset stavov pri zatvorení dialógu
+            setSelectedDate(null);
+            setRegistrationSuccess(null);
+          }
+        }}>
             <DialogTrigger asChild>
-            <Button 
-              size="lg" 
-              className="text-lg px-8 py-6 hover-scale animate-fade-in bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
-              onClick={() => {
-                console.log("🎯 Booking button clicked!");
-                console.log("🎯 Current dialog state:", isDialogOpen);
-                setIsDialogOpen(true);
-                console.log("🎯 Dialog should now be open");
-              }}
-            >
+            <Button size="lg" className="text-lg px-8 py-6 hover-scale animate-fade-in bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg" onClick={() => {
+              console.log("🎯 Booking button clicked!");
+              console.log("🎯 Current dialog state:", isDialogOpen);
+              setIsDialogOpen(true);
+              console.log("🎯 Dialog should now be open");
+            }}>
               Prihlásiť sa na kurz
             </Button>
             </DialogTrigger>
@@ -96,20 +88,9 @@ const Index = () => {
               </DialogHeader>
               
               <div className="grid lg:grid-cols-2 gap-6 p-4">
-                <CalendarBooking 
-                  key={refreshKey}
-                  selectedDate={selectedDate}
-                  onDateSelect={setSelectedDate}
-                />
-                {selectedDate && (
-                  <RegistrationForm 
-                    selectedDate={selectedDate}
-                    onComplete={handleBookingComplete}
-                  />
-                )}
-                {registrationSuccess && (
-                  <RegistrationSuccessCard registrationData={registrationSuccess} />
-                )}
+                <CalendarBooking key={refreshKey} selectedDate={selectedDate} onDateSelect={setSelectedDate} />
+                {selectedDate && <RegistrationForm selectedDate={selectedDate} onComplete={handleBookingComplete} />}
+                {registrationSuccess && <RegistrationSuccessCard registrationData={registrationSuccess} />}
               </div>
             </DialogContent>
           </Dialog>
@@ -173,7 +154,7 @@ const Index = () => {
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 animate-fade-in">Čo sa naučíte</h2>
+            <h2 className="text-3xl font-bold mb-4 animate-fade-in">Na čo sa môžete tešiť</h2>
           </div>
           
           <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto items-start justify-center">
@@ -210,33 +191,26 @@ const Index = () => {
             Vyberte si termín a staňte sa majstrom latte art!
           </p>
           
-           <Dialog open={isDialogOpen} onOpenChange={(open) => {
-             setIsDialogOpen(open);
-             if (!open) {
-               setSelectedDate(null);
-               setRegistrationSuccess(null);
-             }
-           }}>
+           <Dialog open={isDialogOpen} onOpenChange={open => {
+          setIsDialogOpen(open);
+          if (!open) {
+            setSelectedDate(null);
+            setRegistrationSuccess(null);
+          }
+        }}>
             <DialogTrigger asChild>
-              <Button 
-                size="lg" 
-                variant="secondary"
-                className="text-lg px-8 py-6 hover-scale animate-fade-in shadow-lg"
-                onClick={() => {
-                  console.log("🎯 Second booking button clicked!");
-                  console.log("🎯 Current dialog state:", isDialogOpen);
-                  setIsDialogOpen(true);
-                  console.log("🎯 Dialog should now be open (second button)");
-                }}
-              >
+              <Button size="lg" variant="secondary" className="text-lg px-8 py-6 hover-scale animate-fade-in shadow-lg" onClick={() => {
+              console.log("🎯 Second booking button clicked!");
+              console.log("🎯 Current dialog state:", isDialogOpen);
+              setIsDialogOpen(true);
+              console.log("🎯 Dialog should now be open (second button)");
+            }}>
                 Rezervovať kurz teraz
               </Button>
             </DialogTrigger>
           </Dialog>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
