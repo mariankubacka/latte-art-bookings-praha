@@ -12,6 +12,8 @@ const Index = () => {
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
+  console.log("🎯 Index component render - Dialog state:", isDialogOpen);
+
   const handleBookingComplete = () => {
     // Nezatvárať automaticky okno - používateľ si ho môže zatvoriť manuálne
     setSelectedDate(null);
@@ -63,6 +65,12 @@ const Index = () => {
             <Button 
               size="lg" 
               className="text-lg px-8 py-6 hover-scale animate-fade-in bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+              onClick={() => {
+                console.log("🎯 Booking button clicked!");
+                console.log("🎯 Current dialog state:", isDialogOpen);
+                setIsDialogOpen(true);
+                console.log("🎯 Dialog should now be open");
+              }}
             >
               Prihlásiť sa na kurz
             </Button>
@@ -191,6 +199,12 @@ const Index = () => {
                 size="lg" 
                 variant="secondary"
                 className="text-lg px-8 py-6 hover-scale animate-fade-in shadow-lg"
+                onClick={() => {
+                  console.log("🎯 Second booking button clicked!");
+                  console.log("🎯 Current dialog state:", isDialogOpen);
+                  setIsDialogOpen(true);
+                  console.log("🎯 Dialog should now be open (second button)");
+                }}
               >
                 Rezervovať kurz teraz
               </Button>
