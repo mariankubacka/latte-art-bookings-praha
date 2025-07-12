@@ -27,7 +27,7 @@ interface CountryStats {
 }
 
 const COURSE_PRICE = 5000;
-const MAX_PARTICIPANTS_PER_DATE = 20; // Predpokladaná maximálna kapacita
+const MAX_PARTICIPANTS_PER_DATE = 5; // Maximálna kapacita na termín
 
 export const AdminStatistics = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
