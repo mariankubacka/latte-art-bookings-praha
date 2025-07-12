@@ -74,14 +74,24 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     }
 
     try {
+      // Safari-friendly fetch s explicitným timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+      
       // Optimalizovaný dotaz - iba relevantné dátumy pre nadchádzajúce 2 mesiace
       const { data, error } = await supabase
         .from('registrations')
         .select('course_date')
         .gte('course_date', dateRange.start)
-        .lte('course_date', dateRange.end);
+        .lte('course_date', dateRange.end)
+        .abortSignal(controller.signal);
 
-      if (error) throw error;
+      clearTimeout(timeoutId);
+      
+      if (error) {
+        console.error('Calendar fetch error:', error);
+        throw error;
+      }
 
       const counts: Record<string, number> = {};
       data.forEach((registration) => {
@@ -96,11 +106,17 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
       };
 
       setRegistrationCounts(counts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching registrations:', error);
+      
+      // Safari-specific error handling
+      const errorMessage = error?.name === 'AbortError' 
+        ? "Načítanie kalendára trvá príliš dlho. Skúste obnoviť stránku."
+        : "Nepodarilo sa načítať údaje o kapacite kurzov.";
+        
       toast({
         title: "Chyba",
-        description: "Nepodarilo sa načítať údaje o kapacite kurzov.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -118,12 +134,20 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
   };
 
   const isHoliday = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    // Safari-friendly date formatting - použitie lokálneho času
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
     return czechHolidays.includes(dateStr);
   };
 
   const isFull = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    // Safari-friendly date formatting
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
     return (registrationCounts[dateStr] || 0) >= 5;
   };
 
@@ -144,7 +168,11 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
   }, [registrationCounts]);
 
   const getDateBadge = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    // Safari-friendly date formatting
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
     const count = registrationCounts[dateStr] || 0;
     
     if (isHoliday(date)) {
@@ -235,7 +263,13 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
                 <div className="flex items-center gap-2 mt-2">
                   <Users className="w-4 h-4" />
                   <span className="text-sm">
-                    Obsadenosť: {registrationCounts[selectedDate.toISOString().split('T')[0]] || 0}/5
+                    Obsadenosť: {(() => {
+                      const year = selectedDate.getFullYear();
+                      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                      const day = String(selectedDate.getDate()).padStart(2, '0');
+                      const dateStr = `${year}-${month}-${day}`;
+                      return registrationCounts[dateStr] || 0;
+                    })()}/5
                   </span>
                 </div>
               </div>

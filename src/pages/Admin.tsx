@@ -62,17 +62,35 @@ const Admin = () => {
   const fetchRegistrations = async () => {
     setLoading(true);
     try {
+      // Safari-friendly fetch s explicitným AbortController
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      
       const { data, error } = await supabase
         .from("registrations")
         .select("*")
-        .order("course_date", { ascending: true });
+        .order("course_date", { ascending: true })
+        .abortSignal(controller.signal);
 
-      if (error) throw error;
+      clearTimeout(timeoutId);
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
       setRegistrations(data || []);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Registration fetch error:', error);
+      
+      // Safari-specific error handling
+      const errorMessage = error?.name === 'AbortError' 
+        ? "Načítanie trvá príliš dlho. Skúste obnoviť stránku."
+        : error?.message || "Nepodarilo sa načítať registrácie";
+        
       toast({
         title: "Chyba",
-        description: "Nepodarilo sa načítať registrácie",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
