@@ -134,9 +134,6 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
                 })})!
               </p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Automaticky budete presmerovaný na úvodnú stránku...
-            </p>
           </div>
         </CardContent>
       </Card>
