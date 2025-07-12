@@ -93,14 +93,15 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
 
       setIsSuccess(true);
       
+      // Kratší toast, ktorý rýchlo zmizne
       toast({
         title: "Úspešne prihlásený!",
-        description: `Úspešne ste sa prihlásili na kurz latte art. Vidíme sa o 9:00 (${selectedDate.toLocaleDateString('sk-SK')})!`,
+        description: `Rezervácia potvrdená pre ${selectedDate.toLocaleDateString('sk-SK')}`,
+        duration: 2000, // Toast zmizne po 2 sekundách
       });
 
-      setTimeout(() => {
-        onComplete();
-      }, 3000);
+      // Nevoláme onComplete() - okno zostane otvorené
+      // Užívateľ ho musí zatvoriť manuálne
 
     } catch (error) {
       console.error('Registration error:', error);
