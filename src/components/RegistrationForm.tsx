@@ -141,21 +141,50 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
     return (
       <Card>
         <CardContent className="pt-6">
-          <div className="text-center space-y-4">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
-            <h3 className="text-2xl font-bold text-green-700">Úspešne prihlásený!</h3>
-            <p className="text-muted-foreground">
-              Úspešne ste sa prihlásili na kurz latte art.
-            </p>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-800 font-medium">
-                Vidíme sa o 9:00 ({selectedDate.toLocaleDateString('sk-SK', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })})!
+          <div className="text-center space-y-6">
+            <CheckCircle className="w-20 h-20 text-green-500 mx-auto" />
+            
+            <div className="space-y-3">
+              <h3 className="text-3xl font-bold text-green-700">Úspešne prihlásený!</h3>
+              <p className="text-lg text-muted-foreground">
+                Ďakujeme za registráciu na kurz latte art.
               </p>
+            </div>
+
+            <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-6">
+              <h4 className="text-xl font-semibold text-green-800 mb-3">
+                Detaily vašej rezervácie
+              </h4>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2">
+                  <Calendar className="w-5 h-5 text-green-600" />
+                  <p className="text-green-800 font-medium text-lg">
+                    {selectedDate.toLocaleDateString('sk-SK', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </p>
+                </div>
+                
+                <div className="flex items-center justify-center gap-2">
+                  <Clock className="w-5 h-5 text-green-600" />
+                  <p className="text-green-800 font-medium">
+                    9:00 - 17:00
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-3 bg-green-200 rounded-lg">
+                <p className="text-green-900 font-semibold">
+                  Vidíme sa na kurze! 🎉
+                </p>
+                <p className="text-green-800 text-sm mt-1">
+                  Na váš e-mail sme poslali potvrdenie s ďalšími informáciami.
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
