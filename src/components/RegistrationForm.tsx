@@ -106,10 +106,17 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
       // Nevoláme zatvorenie okna - okno zostane otvorené
 
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Registration error details:', error);
+      
+      // Zobrazíme detailnú chybu pre debugging
+      const errorMessage = error instanceof Error ? error.message : 'Neznáma chyba';
+      console.log('Error message:', errorMessage);
+      console.log('Selected date:', selectedDate.toISOString().split('T')[0]);
+      console.log('Day of week:', selectedDate.getDay()); // 0=nedeľa, 1=pondelok, ..., 3=streda
+      
       toast({
         title: "Chyba pri registrácii",
-        description: "Nepodarilo sa zaregistrovať na kurz. Skúste to znovu.",
+        description: `Detaily chyby: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
