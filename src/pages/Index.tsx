@@ -228,7 +228,7 @@ const Index = () => {
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             {/* Company Info */}
             <div>
-              <h3 className="text-xl font-bold mb-4 flex items-center">
+              <h3 className="text-lg font-bold mb-4 flex items-center">
                 <Coffee className="w-6 h-6 mr-2" />
                 Latte Art Kurzy Praha
               </h3>
