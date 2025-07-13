@@ -53,19 +53,29 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
     setIsSubmitting(true);
 
     try {
-      // Pre ReCaptcha v3 spustíme execute na začiatku
-      if (recaptchaSettings?.site_key && recaptchaRef.current) {
+      let captchaToken = recaptchaToken;
+      
+      // Pre ReCaptcha v3 spustíme execute ak nie je token
+      if (recaptchaSettings?.site_key && recaptchaRef.current && !captchaToken) {
         console.log('🔄 Executing ReCaptcha v3...');
+        
+        // Reset token pred novým pokusom
+        setRecaptchaToken(null);
+        
+        // Spustíme execute
         recaptchaRef.current.execute();
         
-        // Počkáme na token (callback môže trvať chvíľu)
-        let attempts = 0;
-        while (!recaptchaToken && attempts < 10) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          attempts++;
+        // Počkáme na token s timeout
+        for (let i = 0; i < 20; i++) {
+          await new Promise(resolve => setTimeout(resolve, 300));
+          if (recaptchaToken) {
+            captchaToken = recaptchaToken;
+            break;
+          }
         }
         
-        if (!recaptchaToken) {
+        if (!captchaToken) {
+          console.error('❌ ReCaptcha token not received after execute');
           toast({
             title: "ReCaptcha overenie",
             description: "ReCaptcha overenie zlyhalo. Skúste to znovu.",
@@ -74,6 +84,8 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
           setIsSubmitting(false);
           return;
         }
+        
+        console.log('✅ ReCaptcha token received:', captchaToken?.substring(0, 20) + '...');
       }
       // ReCaptcha validácia - len ak je nastavená
       if (recaptchaSettings?.site_key && recaptchaToken) {
