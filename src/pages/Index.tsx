@@ -242,12 +242,12 @@ const Index = () => {
 
             {/* Quick Links */}
             <div>
-              <h4 className="text-lg font-semibold mb-4">Rýchle odkazy</h4>
+              <h4 className="text-lg font-semibold mb-4">Prečo si vybrať náš kurz?</h4>
               <ul className="space-y-2 text-primary-foreground/80">
-                <li>• Základné techniky</li>
-                <li>• Pokročilé vzory</li>
-                <li>• Skúsení školitelia</li>
-                <li>• Rezervácia kurzu</li>
+                <li>• Naučte sa za jeden deň</li>
+                <li>• Malé skupiny - individuálny prístup</li>
+                <li>• Využívanie profesionálneho vybavenia</li>
+                <li>• Získate certifikát o absolvovaní</li>
               </ul>
             </div>
 
