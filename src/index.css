@@ -36,6 +36,11 @@ All colors MUST be HSL.
     --input: 35 30% 85%;
     --ring: 25 95% 53%;
 
+    /* Enhanced contrast hover effects */
+    --primary-hover: 25 98% 48%;
+    --primary-hover-glow: 25 95% 53%;
+    --secondary-hover: 35 80% 75%;
+
     --radius: 0.5rem;
 
     --sidebar-background: 44 20% 97%;
@@ -76,6 +81,11 @@ All colors MUST be HSL.
     --border: 20 15% 15%;
     --input: 20 15% 15%;
     --ring: 25 95% 53%;
+
+    /* Enhanced contrast hover effects */
+    --primary-hover: 25 98% 55%;
+    --primary-hover-glow: 25 95% 53%;
+    --secondary-hover: 20 25% 25%;
     
     --sidebar-background: 20 25% 10%;
     --sidebar-foreground: 44 20% 85%;
