@@ -19,26 +19,43 @@ export function AdminRecaptcha() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
+        console.log('🔍 Loading ReCaptcha settings from database...');
+        
         const { data, error } = await supabase
           .from('recaptcha_settings')
           .select('site_key, secret_key')
           .single();
 
+        console.log('🔍 Database response:', { data, error });
+
         if (error && error.code !== 'PGRST116') {
-          console.error('Error loading settings:', error);
+          console.error('❌ Error loading settings:', error);
+          toast({
+            title: "Chyba",
+            description: `Nepodarilo sa načítať nastavenia: ${error.message}`,
+            variant: "destructive",
+          });
         } else if (data) {
+          console.log('✅ Loaded existing settings');
           setSiteKey(data.site_key || "");
           setSecretKey(data.secret_key || "");
+        } else {
+          console.log('ℹ️ No existing settings found');
         }
       } catch (err) {
-        console.error('Failed to load ReCaptcha settings:', err);
+        console.error('💥 Failed to load ReCaptcha settings:', err);
+        toast({
+          title: "Chyba",
+          description: "Nepodarilo sa načítať nastavenia",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     loadSettings();
-  }, []);
+  }, [toast]);
 
   const handleSave = async () => {
     if (!siteKey.trim() || !secretKey.trim()) {
@@ -53,27 +70,38 @@ export function AdminRecaptcha() {
     setIsSaving(true);
     
     try {
-      const { error } = await supabase
+      console.log('🔐 Saving ReCaptcha settings:', { 
+        siteKey: siteKey.slice(0, 10) + '...', 
+        secretKey: secretKey.slice(0, 10) + '...' 
+      });
+      
+      const { data, error } = await supabase
         .from('recaptcha_settings')
         .upsert({
           id: 1, // Používame pevné ID pre singleton záznam
           site_key: siteKey.trim(),
           secret_key: secretKey.trim(),
-        });
+        }, {
+          onConflict: 'id'
+        })
+        .select();
+
+      console.log('🔐 Supabase response:', { data, error });
 
       if (error) {
         throw error;
       }
 
+      console.log('✅ ReCaptcha settings saved successfully');
       toast({
         title: "Úspech",
         description: "ReCaptcha nastavenia boli uložené",
       });
     } catch (error) {
-      console.error('Error saving ReCaptcha settings:', error);
+      console.error('❌ Error saving ReCaptcha settings:', error);
       toast({
         title: "Chyba",
-        description: "Nepodarilo sa uložiť nastavenia",
+        description: `Nepodarilo sa uložiť nastavenia: ${error instanceof Error ? error.message : 'Neznáma chyba'}`,
         variant: "destructive",
       });
     } finally {
