@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { UserCheck, Mail, Calendar, Clock, CheckCircle } from "lucide-react";
+import { useRecaptchaSettings } from "@/hooks/use-recaptcha-settings";
+import { RecaptchaComponent, RecaptchaComponentRef } from "@/components/RecaptchaComponent";
+import { UserCheck, Mail, Calendar, Clock, Shield } from "lucide-react";
 
 interface RegistrationFormProps {
   selectedDate: Date;
@@ -16,8 +18,14 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<RecaptchaComponentRef>(null);
+  const { settings: recaptchaSettings, isLoading: isLoadingRecaptcha } = useRecaptchaSettings();
   const { toast } = useToast();
+
+  const handleRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +45,16 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
       toast({
         title: "Neplatný e-mail",
         description: "Prosím zadajte platný e-mail.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // ReCaptcha validácia - len ak je nastavená
+    if (recaptchaSettings?.site_key && !recaptchaToken) {
+      toast({
+        title: "ReCaptcha overenie",
+        description: "Prosím potvrďte, že nie ste robot.",
         variant: "destructive",
       });
       return;
@@ -104,7 +122,7 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
 
       if (insertError) throw insertError;
 
-      setIsSuccess(true);
+      
       
       // Kratší toast, ktorý rýchlo zmizne
       toast({
@@ -216,6 +234,21 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
                 </div>
               </div>
             </div>
+
+            {/* ReCaptcha */}
+            {!isLoadingRecaptcha && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield className="w-4 h-4 text-muted-foreground" />
+                  <Label className="text-sm text-muted-foreground">Bezpečnostné overenie</Label>
+                </div>
+                <RecaptchaComponent
+                  ref={recaptchaRef}
+                  onVerify={handleRecaptchaChange}
+                  siteKey={recaptchaSettings?.site_key}
+                />
+              </div>
+            )}
 
             <Button 
               type="submit" 
