@@ -50,19 +50,31 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
       return;
     }
 
-    // ReCaptcha validácia - len ak je nastavená
-    if (recaptchaSettings?.site_key && !recaptchaToken) {
-      toast({
-        title: "ReCaptcha overenie",
-        description: "Prosím potvrďte, že nie ste robot.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
+      // Pre ReCaptcha v3 spustíme execute na začiatku
+      if (recaptchaSettings?.site_key && recaptchaRef.current) {
+        console.log('🔄 Executing ReCaptcha v3...');
+        recaptchaRef.current.execute();
+        
+        // Počkáme na token (callback môže trvať chvíľu)
+        let attempts = 0;
+        while (!recaptchaToken && attempts < 10) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          attempts++;
+        }
+        
+        if (!recaptchaToken) {
+          toast({
+            title: "ReCaptcha overenie",
+            description: "ReCaptcha overenie zlyhalo. Skúste to znovu.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
       // ReCaptcha validácia - len ak je nastavená
       if (recaptchaSettings?.site_key && recaptchaToken) {
         console.log('🔐 Validating ReCaptcha token...');
@@ -271,12 +283,14 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
               </div>
             </div>
 
-            {/* ReCaptcha */}
-            {!isLoadingRecaptcha && (
+            {/* ReCaptcha v3 - neviditeľná, len informácia */}
+            {!isLoadingRecaptcha && recaptchaSettings?.site_key && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 mb-2">
                   <Shield className="w-4 h-4 text-muted-foreground" />
-                  <Label className="text-sm text-muted-foreground">Bezpečnostné overenie</Label>
+                  <Label className="text-sm text-muted-foreground">
+                    Táto stránka je chránená pomocou reCAPTCHA v3
+                  </Label>
                 </div>
                 <RecaptchaComponent
                   ref={recaptchaRef}

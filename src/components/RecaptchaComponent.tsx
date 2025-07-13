@@ -47,8 +47,8 @@ export const RecaptchaComponent = forwardRef<RecaptchaComponentRef, RecaptchaCom
           ref={recaptchaRef}
           sitekey={siteKey}
           onChange={onVerify}
-          size="normal"
-          theme="light"
+          size="invisible"
+          badge="bottomright"
         />
       </div>
     );
