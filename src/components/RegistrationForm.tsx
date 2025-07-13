@@ -1,13 +1,11 @@
-import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useRecaptchaSettings } from "@/hooks/use-recaptcha-settings";
-import { RecaptchaComponent, RecaptchaComponentRef } from "@/components/RecaptchaComponent";
-import { UserCheck, Mail, Calendar, Clock, Shield } from "lucide-react";
+import { RecaptchaComponent } from "@/components/RecaptchaComponent";
+import { CourseDetailsCard } from "@/components/CourseDetailsCard";
+import { RegistrationFormFields } from "@/components/RegistrationFormFields";
+import { useRegistrationForm } from "@/hooks/use-registration-form";
+import { UserCheck, Shield } from "lucide-react";
 
 interface RegistrationFormProps {
   selectedDate: Date;
@@ -15,211 +13,18 @@ interface RegistrationFormProps {
 }
 
 export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormProps) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
-  const recaptchaRef = useRef<RecaptchaComponentRef>(null);
-  const { settings: recaptchaSettings, isLoading: isLoadingRecaptcha } = useRecaptchaSettings();
-  const { toast } = useToast();
-
-  const handleRecaptchaChange = (token: string | null) => {
-    setRecaptchaToken(token);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!name.trim() || !email.trim()) {
-      toast({
-        title: "Chýbajú údaje",
-        description: "Prosím vyplňte meno a e-mail.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast({
-        title: "Neplatný e-mail",
-        description: "Prosím zadajte platný e-mail.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      let captchaToken = recaptchaToken;
-      
-      // Pre ReCaptcha v3 spustíme execute ak nie je token
-      if (recaptchaSettings?.site_key && recaptchaRef.current && !captchaToken) {
-        console.log('🔄 Executing ReCaptcha v3...');
-        
-        // Reset token pred novým pokusom
-        setRecaptchaToken(null);
-        
-        // Spustíme execute
-        recaptchaRef.current.execute();
-        
-        // Počkáme na token s timeout
-        for (let i = 0; i < 20; i++) {
-          await new Promise(resolve => setTimeout(resolve, 300));
-          if (recaptchaToken) {
-            captchaToken = recaptchaToken;
-            break;
-          }
-        }
-        
-        if (!captchaToken) {
-          console.error('❌ ReCaptcha token not received after execute');
-          toast({
-            title: "ReCaptcha overenie",
-            description: "ReCaptcha overenie zlyhalo. Skúste to znovu.",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-        
-        console.log('✅ ReCaptcha token received:', captchaToken?.substring(0, 20) + '...');
-      }
-      // ReCaptcha validácia - len ak je nastavená
-      if (recaptchaSettings?.site_key && recaptchaToken) {
-        console.log('🔐 Validating ReCaptcha token...');
-        
-        const recaptchaResponse = await supabase.functions.invoke('validate-recaptcha', {
-          body: {
-            token: recaptchaToken,
-            userInfo: {
-              name: name.trim(),
-              email: email.toLowerCase().trim()
-            }
-          }
-        });
-
-        if (recaptchaResponse.error || !recaptchaResponse.data?.success) {
-          console.error('❌ ReCaptcha validation failed:', recaptchaResponse);
-          toast({
-            title: "Bezpečnostné overenie zlyhalo",
-            description: "Prosím skúste znova alebo obnovte stránku.",
-            variant: "destructive",
-          });
-          // Reset ReCaptcha
-          recaptchaRef.current?.reset();
-          setRecaptchaToken(null);
-          return;
-        }
-        
-        console.log('✅ ReCaptcha validation successful');
-      }
-
-      // Formatujeme dátum bez timezone konverzie
-      const year = selectedDate.getFullYear();
-      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(selectedDate.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-      
-      console.log('🗓️ Registration Debug:');
-      console.log('Selected Date object:', selectedDate);
-      console.log('Date for DB (formatted):', dateStr);
-      console.log('ISO string (problematic):', selectedDate.toISOString().split('T')[0]);
-      
-      // Check current capacity
-      const { data: existingRegistrations, error: countError } = await supabase
-        .from('registrations')
-        .select('id')
-        .eq('course_date', dateStr);
-
-      if (countError) throw countError;
-
-      if (existingRegistrations && existingRegistrations.length >= 5) {
-        toast({
-          title: "Kurz je obsadený",
-          description: "Na tento deň je už obsadených 5 miest. Vyberte si iný termín.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Check if user is already registered for this date
-      const { data: existingUser, error: userError } = await supabase
-        .from('registrations')
-        .select('id')
-        .eq('course_date', dateStr)
-        .eq('participant_email', email.toLowerCase());
-
-      if (userError) throw userError;
-
-      if (existingUser && existingUser.length > 0) {
-        toast({
-          title: "Už ste prihlásený",
-          description: "Na tento deň ste už prihlásený s týmto e-mailom.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Register the user
-      const { error: insertError } = await supabase
-        .from('registrations')
-        .insert({
-          course_date: dateStr,
-          participant_name: name.trim(),
-          participant_email: email.toLowerCase().trim(),
-        });
-        
-      console.log('✅ Registration successful with date:', dateStr);
-
-      if (insertError) throw insertError;
-
-      
-      
-      // Kratší toast, ktorý rýchlo zmizne
-      toast({
-        title: "Úspešne prihlásený!",
-        description: `Rezervácia potvrdená pre ${selectedDate.toLocaleDateString('sk-SK')}`,
-        duration: 2000, // Toast zmizne po 2 sekundách
-      });
-
-      // Zavoláme onComplete s údajmi o registrácii
-      onComplete({
-        date: selectedDate,
-        name: name.trim(),
-        email: email.toLowerCase().trim()
-      });
-
-      // Reset ReCaptcha po úspešnej registrácii
-      if (recaptchaRef.current) {
-        recaptchaRef.current.reset();
-        setRecaptchaToken(null);
-      }
-
-      // Nevoláme zatvorenie okna - okno zostane otvorené
-
-    } catch (error) {
-      console.error('Registration error details:', error);
-      
-      // Zobrazíme detailnú chybu pre debugging
-      const errorMessage = error instanceof Error ? error.message : 'Neznáma chyba';
-      console.log('Error message:', errorMessage);
-      console.log('Selected date:', selectedDate.toISOString().split('T')[0]);
-      console.log('Day of week:', selectedDate.getDay()); // 0=nedeľa, 1=pondelok, ..., 3=streda
-      
-      toast({
-        title: "Chyba pri registrácii",
-        description: `Detaily chyby: ${errorMessage}`,
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Už netreba renderovať success page tu, pretože sa zobrazuje v RegistrationSuccessCard
+  const {
+    name,
+    setName,
+    email,
+    setEmail,
+    isSubmitting,
+    recaptchaRef,
+    recaptchaSettings,
+    isLoadingRecaptcha,
+    handleRecaptchaChange,
+    handleSubmit
+  } = useRegistrationForm({ selectedDate, onComplete });
 
   return (
     <Card>
@@ -234,66 +39,15 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Course Details */}
-          <div className="bg-muted/50 rounded-lg p-4">
-            <h4 className="font-semibold mb-2">Detaily kurzu</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span>
-                  {selectedDate.toLocaleDateString('sk-SK', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                <span>9:00 - 17:00</span>
-              </div>
-            </div>
-          </div>
+          <CourseDetailsCard selectedDate={selectedDate} />
 
-          {/* Registration Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Meno a priezvisko *</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Zadajte vaše meno"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mailová adresa *</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="vas@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-start gap-2">
-                <Mail className="w-4 h-4 text-blue-600 mt-0.5" />
-                <div className="text-sm text-blue-800">
-                  <p className="font-medium">Informácia o kurze</p>
-                  <p>
-                    Na váš e-mail vám pošleme potvrdenie a ďalšie informácie o kurze.
-                    Kurz prebieha v Prahe, presná adresa bude v potvrdení.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <RegistrationFormFields
+              name={name}
+              setName={setName}
+              email={email}
+              setEmail={setEmail}
+            />
 
             {/* ReCaptcha v3 - neviditeľná, len informácia */}
             {!isLoadingRecaptcha && recaptchaSettings?.site_key && (
