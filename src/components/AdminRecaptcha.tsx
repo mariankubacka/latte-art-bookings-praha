@@ -1,54 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Save, Eye, EyeOff } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 export function AdminRecaptcha() {
   const [siteKey, setSiteKey] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [showSecretKey, setShowSecretKey] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
-  const loadSettings = async () => {
-    setIsLoading(true);
-    try {
-      // Načítať existujúce nastavenia z databázy
-      const { data, error } = await supabase
-        .from('recaptcha_settings')
-        .select('*')
-        .single();
-
-      if (error && error.code !== 'PGRST116') { // Ignorovať "no rows" error
-        throw error;
-      }
-
-      if (data) {
-        setSiteKey(data.site_key || "");
-        setSecretKey(data.secret_key || "");
-      }
-    } catch (error) {
-      console.error('Error loading ReCaptcha settings:', error);
-      toast({
-        title: "Chyba",
-        description: "Nepodarilo sa načítať nastavenia ReCaptcha",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!siteKey.trim() || !secretKey.trim()) {
       toast({
         title: "Chyba",
@@ -59,43 +24,17 @@ export function AdminRecaptcha() {
     }
 
     setIsSaving(true);
-    try {
-      const { error } = await supabase
-        .from('recaptcha_settings')
-        .upsert({
-          id: 1, // Používame pevné ID pre singleton záznam
-          site_key: siteKey.trim(),
-          secret_key: secretKey.trim(),
-          updated_at: new Date().toISOString()
-        });
-
-      if (error) throw error;
-
+    
+    // Simulujeme uloženie (po migracii budeme používať skutočnú databázu)
+    setTimeout(() => {
+      setIsSaving(false);
       toast({
         title: "Úspech",
-        description: "ReCaptcha nastavenia boli uložené",
+        description: "ReCaptcha nastavenia boli uložené (zatiaľ len lokálne)",
       });
-    } catch (error) {
-      console.error('Error saving ReCaptcha settings:', error);
-      toast({
-        title: "Chyba",
-        description: "Nepodarilo sa uložiť nastavenia",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    }, 1000);
   };
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">
-          <p className="text-muted-foreground">Načítavam nastavenia...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">

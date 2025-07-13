@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      recaptcha_settings: {
+        Row: {
+          created_at: string
+          id: number
+          secret_key: string
+          site_key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          secret_key: string
+          site_key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          secret_key?: string
+          site_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       registrations: {
         Row: {
           course_date: string

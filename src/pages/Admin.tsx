@@ -8,6 +8,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { AdminStatistics } from "@/components/AdminStatistics";
 import { AdminParticipants } from "@/components/AdminParticipants";
+import { AdminRecaptcha } from "@/components/AdminRecaptcha";
 import { LogOut } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { setCookie, getCookie, deleteCookie } from "@/lib/cookies";
@@ -52,6 +53,8 @@ const Admin = () => {
     const pathname = location.pathname;
     if (pathname === "/admin/participants") {
       return <AdminParticipants />;
+    } else if (pathname === "/admin/recaptcha") {
+      return <AdminRecaptcha />;
     } else {
       return <AdminStatistics />; // Default view for /admin
     }

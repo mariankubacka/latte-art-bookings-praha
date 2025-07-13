@@ -1,4 +1,4 @@
-import { BarChart3, Users } from "lucide-react";
+import { BarChart3, Users, Shield } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -15,6 +15,7 @@ import {
 const items = [
   { title: "Štatistiky", url: "/admin", icon: BarChart3 },
   { title: "Účastníci", url: "/admin/participants", icon: Users },
+  { title: "ReCaptcha", url: "/admin/recaptcha", icon: Shield },
 ];
 
 export function AdminSidebar() {
