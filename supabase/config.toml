@@ -1,1 +1,4 @@
 project_id = "pcmuubmjfejipcfqusnf"
+
+[functions.validate-recaptcha]
+verify_jwt = false

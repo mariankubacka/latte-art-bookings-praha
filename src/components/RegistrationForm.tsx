@@ -63,6 +63,36 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
     setIsSubmitting(true);
 
     try {
+      // ReCaptcha validácia - len ak je nastavená
+      if (recaptchaSettings?.site_key && recaptchaToken) {
+        console.log('🔐 Validating ReCaptcha token...');
+        
+        const recaptchaResponse = await supabase.functions.invoke('validate-recaptcha', {
+          body: {
+            token: recaptchaToken,
+            userInfo: {
+              name: name.trim(),
+              email: email.toLowerCase().trim()
+            }
+          }
+        });
+
+        if (recaptchaResponse.error || !recaptchaResponse.data?.success) {
+          console.error('❌ ReCaptcha validation failed:', recaptchaResponse);
+          toast({
+            title: "Bezpečnostné overenie zlyhalo",
+            description: "Prosím skúste znova alebo obnovte stránku.",
+            variant: "destructive",
+          });
+          // Reset ReCaptcha
+          recaptchaRef.current?.reset();
+          setRecaptchaToken(null);
+          return;
+        }
+        
+        console.log('✅ ReCaptcha validation successful');
+      }
+
       // Formatujeme dátum bez timezone konverzie
       const year = selectedDate.getFullYear();
       const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
@@ -137,6 +167,12 @@ export function RegistrationForm({ selectedDate, onComplete }: RegistrationFormP
         name: name.trim(),
         email: email.toLowerCase().trim()
       });
+
+      // Reset ReCaptcha po úspešnej registrácii
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+        setRecaptchaToken(null);
+      }
 
       // Nevoláme zatvorenie okna - okno zostane otvorené
 
