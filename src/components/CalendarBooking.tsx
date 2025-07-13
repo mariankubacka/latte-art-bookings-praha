@@ -88,11 +88,17 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     return (registrationCounts[dateStr] || 0) >= 5;
   };
 
-  // Povolené sú len stredy, štvrtky a piatky + kontrola kapacity
+  // Povolené sú len stredy, štvrtky a piatky medzi 16. júlom a 6. augustom 2025 + kontrola kapacity
   const isDateDisabled = useCallback((date: Date) => {
     const dayOfWeek = date.getDay(); // 0 = nedeľa, 1 = pondelok, ... 6 = sobota
     const isNotAllowedDay = dayOfWeek !== 3 && dayOfWeek !== 4 && dayOfWeek !== 5; // nie streda, štvrtok, piatok
-    return isNotAllowedDay || isFull(date);
+    
+    // Povolené len medzi 16. júlom 2025 a 6. augustom 2025 (vrátane)
+    const startDate = new Date(2025, 6, 16); // 16. júl 2025 (mesiac je 0-indexed)
+    const endDate = new Date(2025, 7, 6); // 6. august 2025
+    const isOutsideDateRange = date < startDate || date > endDate;
+    
+    return isNotAllowedDay || isOutsideDateRange || isFull(date);
   }, [registrationCounts]);
 
   const getDateBadge = (date: Date) => {
