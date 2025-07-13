@@ -88,9 +88,11 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
     return (registrationCounts[dateStr] || 0) >= 5;
   };
 
-  // TABULA RASA - jediné obmedzenie je kapacita 5 účastníkov
+  // Povolené sú len stredy, štvrtky a piatky + kontrola kapacity
   const isDateDisabled = useCallback((date: Date) => {
-    return isFull(date); // Zakázané len ak je plný
+    const dayOfWeek = date.getDay(); // 0 = nedeľa, 1 = pondelok, ... 6 = sobota
+    const isNotAllowedDay = dayOfWeek !== 3 && dayOfWeek !== 4 && dayOfWeek !== 5; // nie streda, štvrtok, piatok
+    return isNotAllowedDay || isFull(date);
   }, [registrationCounts]);
 
   const getDateBadge = (date: Date) => {
@@ -135,7 +137,7 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
           Vyberte termín kurzu
         </CardTitle>
         <CardDescription>
-          Vyberte si ľubovoľný deň pre váš kurz latte art
+          Kurzy sa konajú v stredu, štvrtok a piatok
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -196,7 +198,7 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
               </div>
                <div className="flex items-center gap-2">
                 <AlertTriangle className="w-3 h-3 text-muted-foreground" />
-                <span>Môžete vybrať ľubovoľný dátum</span>
+                <span>Dostupné len streda, štvrtok a piatok</span>
                </div>
             </div>
           </div>
