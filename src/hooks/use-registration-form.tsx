@@ -53,43 +53,82 @@ export function useRegistrationForm({ selectedDate, onComplete }: UseRegistratio
 
     console.log('🔄 Starting ReCaptcha v3 validation...');
     
-    // Reset token pred novým pokusom
-    setRecaptchaToken(null);
-    
-    // Vytvoríme promise pre získanie tokenu
-    const tokenPromise = new Promise<string | null>((resolve, reject) => {
-      // Timeout po 10 sekundách
-      const timeout = setTimeout(() => {
-        console.error('❌ ReCaptcha timeout');
-        reject(new Error('ReCaptcha timeout'));
-      }, 10000);
-
-      // Dočasne nahradíme callback
-      const originalCallback = handleRecaptchaChange;
-      const tempCallback = (token: string | null) => {
-        clearTimeout(timeout);
-        console.log('✅ ReCaptcha token received:', token?.substring(0, 20) + '...');
-        originalCallback(token); // Zavoláme pôvodný callback
-        resolve(token);
-      };
-
-      // Nastavíme dočasný callback a spustíme execute
-      if (recaptchaRef.current) {
-        // Hack: pristúpime priamo k ReCaptcha instance cez ref
-        const recaptchaInstance = (recaptchaRef.current as any).recaptchaRef?.current;
-        if (recaptchaInstance) {
-          recaptchaInstance.props.onChange = tempCallback;
-        }
-        recaptchaRef.current.execute();
-      } else {
-        clearTimeout(timeout);
-        reject(new Error('ReCaptcha ref not available'));
-      }
-    });
-
     try {
-      const captchaToken = await tokenPromise;
+      // Reset token pred novým pokusom
+      setRecaptchaToken(null);
       
+      // Vytvoríme promise pre získanie tokenu priamo z ReCaptcha
+      const captchaToken = await new Promise<string | null>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          console.error('❌ ReCaptcha timeout after 15 seconds');
+          reject(new Error('ReCaptcha timeout'));
+        }, 15000);
+
+        // Použijeme executeAsync() ak je dostupná
+        if (recaptchaRef.current) {
+          try {
+            // Pristúpime k vnútornej ReCaptcha instance
+            const recaptchaInstance = (recaptchaRef.current as any).recaptchaRef?.current;
+            
+            if (recaptchaInstance && recaptchaInstance.executeAsync) {
+              console.log('🔄 Using executeAsync...');
+              recaptchaInstance.executeAsync()
+                .then((token: string) => {
+                  clearTimeout(timeout);
+                  console.log('✅ ReCaptcha token received via executeAsync:', token?.substring(0, 20) + '...');
+                  resolve(token);
+                })
+                .catch((error: any) => {
+                  clearTimeout(timeout);
+                  console.error('❌ ReCaptcha executeAsync failed:', error);
+                  reject(error);
+                });
+            } else {
+              // Fallback na štandardný execute s callback
+              console.log('🔄 Using standard execute with callback...');
+              
+              // Nastavíme callback
+              const originalCallback = handleRecaptchaChange;
+              let callbackCalled = false;
+              
+              const tempCallback = (token: string | null) => {
+                if (!callbackCalled) {
+                  callbackCalled = true;
+                  clearTimeout(timeout);
+                  console.log('✅ ReCaptcha token received via callback:', token?.substring(0, 20) + '...');
+                  originalCallback(token);
+                  resolve(token);
+                }
+              };
+
+              // Hack: nastavíme dočasný callback
+              if (recaptchaInstance) {
+                const oldOnChange = recaptchaInstance.props?.onChange;
+                recaptchaInstance.props = { ...recaptchaInstance.props, onChange: tempCallback };
+                
+                recaptchaRef.current.execute();
+                
+                // Obnovíme pôvodný callback po chvíli
+                setTimeout(() => {
+                  if (recaptchaInstance.props) {
+                    recaptchaInstance.props.onChange = oldOnChange;
+                  }
+                }, 1000);
+              } else {
+                clearTimeout(timeout);
+                reject(new Error('ReCaptcha instance not found'));
+              }
+            }
+          } catch (error) {
+            clearTimeout(timeout);
+            reject(error);
+          }
+        } else {
+          clearTimeout(timeout);
+          reject(new Error('ReCaptcha ref not available'));
+        }
+      });
+
       if (!captchaToken) {
         toast({
           title: "ReCaptcha overenie",
