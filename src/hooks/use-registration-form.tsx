@@ -18,8 +18,18 @@ export function useRegistrationForm({ selectedDate, onComplete }: UseRegistratio
   const { settings: recaptchaSettings, isLoading: isLoadingRecaptcha } = useRecaptchaSettings();
   const { toast } = useToast();
 
+  // Ref pre callback override
+  const recaptchaCallbackRef = useRef<((token: string | null) => void) | null>(null);
+
   const handleRecaptchaChange = (token: string | null) => {
+    console.log('🔔 handleRecaptchaChange called with token:', token?.substring(0, 20) + '...');
     setRecaptchaToken(token);
+    
+    // Ak máme override callback, zavoláme ho
+    if (recaptchaCallbackRef.current) {
+      recaptchaCallbackRef.current(token);
+      recaptchaCallbackRef.current = null; // Reset po použití
+    }
   };
 
   const validateForm = () => {
@@ -54,34 +64,30 @@ export function useRegistrationForm({ selectedDate, onComplete }: UseRegistratio
     console.log('🔄 Starting ReCaptcha v3 validation...');
     
     try {
-      // Reset token pred novým pokusom
-      setRecaptchaToken(null);
+      // Vytvoríme promise ktoré sa splní keď dostaneme token
+      const tokenPromise = new Promise<string | null>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          console.error('❌ ReCaptcha timeout after 20 seconds');
+          recaptchaCallbackRef.current = null; // Clear callback
+          reject(new Error('ReCaptcha timeout'));
+        }, 20000);
+
+        // Nastavíme callback override
+        recaptchaCallbackRef.current = (token: string | null) => {
+          clearTimeout(timeout);
+          console.log('✅ ReCaptcha token received in override:', token?.substring(0, 20) + '...');
+          resolve(token);
+        };
+
+        // Spustíme execute
+        console.log('🔄 Calling ReCaptcha execute...');
+        recaptchaRef.current?.execute();
+      });
+
+      const captchaToken = await tokenPromise;
       
-      // Jednoduchý prístup - spustíme execute a počkáme na state update
-      recaptchaRef.current.execute();
-      console.log('✅ ReCaptcha execute called');
-      
-      // Počkáme na token cez polling state
-      let attempts = 0;
-      const maxAttempts = 30; // 15 sekúnd s 500ms intervalmi
-      
-      while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Skontrolujeme či sa token aktualizoval
-        if (recaptchaToken) {
-          console.log('✅ ReCaptcha token received from state:', recaptchaToken.substring(0, 20) + '...');
-          break;
-        }
-        
-        attempts++;
-        if (attempts % 6 === 0) { // Každé 3 sekundy
-          console.log(`🔄 Waiting for ReCaptcha token... attempt ${attempts}/${maxAttempts}`);
-        }
-      }
-      
-      if (!recaptchaToken) {
-        console.error('❌ ReCaptcha token not received after', maxAttempts * 0.5, 'seconds');
+      if (!captchaToken) {
+        console.error('❌ No ReCaptcha token received');
         toast({
           title: "ReCaptcha overenie",
           description: "ReCaptcha overenie zlyhalo. Skúste to znovu.",
@@ -95,7 +101,7 @@ export function useRegistrationForm({ selectedDate, onComplete }: UseRegistratio
       
       const recaptchaResponse = await supabase.functions.invoke('validate-recaptcha', {
         body: {
-          token: recaptchaToken,
+          token: captchaToken,
           userInfo: {
             name: name.trim(),
             email: email.toLowerCase().trim()
@@ -117,7 +123,7 @@ export function useRegistrationForm({ selectedDate, onComplete }: UseRegistratio
       }
       
       console.log('✅ ReCaptcha validation successful');
-      return recaptchaToken;
+      return captchaToken;
 
     } catch (error) {
       console.error('❌ ReCaptcha error:', error);

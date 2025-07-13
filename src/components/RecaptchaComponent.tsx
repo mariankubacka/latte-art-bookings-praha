@@ -49,6 +49,7 @@ export const RecaptchaComponent = forwardRef<RecaptchaComponentRef, RecaptchaCom
           onChange={onVerify}
           size="invisible"
           badge="bottomright"
+          isolated={true}
         />
       </div>
     );
