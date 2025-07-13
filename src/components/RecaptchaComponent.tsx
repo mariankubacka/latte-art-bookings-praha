@@ -24,6 +24,9 @@ export const RecaptchaComponent = forwardRef<RecaptchaComponentRef, RecaptchaCom
       },
     }));
 
+    // Debug info pre ReCaptcha kľúč
+    console.log('🔑 ReCaptcha siteKey:', siteKey ? `${siteKey.slice(0, 20)}...` : 'undefined');
+
     // Ak nie je siteKey nastavený, zobraziť informatívnu správu
     if (!siteKey) {
       return (
