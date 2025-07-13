@@ -46,29 +46,51 @@ export function useRegistrationForm({ selectedDate, onComplete }: UseRegistratio
   };
 
   const handleReCaptchaValidation = async () => {
-    let captchaToken = recaptchaToken;
+    // Ak nie je nastavená ReCaptcha, pokračuj bez validácie
+    if (!recaptchaSettings?.site_key || !recaptchaRef.current) {
+      return null;
+    }
+
+    console.log('🔄 Starting ReCaptcha v3 validation...');
     
-    // Pre ReCaptcha v3 spustíme execute ak nie je token
-    if (recaptchaSettings?.site_key && recaptchaRef.current && !captchaToken) {
-      console.log('🔄 Executing ReCaptcha v3...');
-      
-      // Reset token pred novým pokusom
-      setRecaptchaToken(null);
-      
-      // Spustíme execute
-      recaptchaRef.current.execute();
-      
-      // Počkáme na token s timeout
-      for (let i = 0; i < 20; i++) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        if (recaptchaToken) {
-          captchaToken = recaptchaToken;
-          break;
+    // Reset token pred novým pokusom
+    setRecaptchaToken(null);
+    
+    // Vytvoríme promise pre získanie tokenu
+    const tokenPromise = new Promise<string | null>((resolve, reject) => {
+      // Timeout po 10 sekundách
+      const timeout = setTimeout(() => {
+        console.error('❌ ReCaptcha timeout');
+        reject(new Error('ReCaptcha timeout'));
+      }, 10000);
+
+      // Dočasne nahradíme callback
+      const originalCallback = handleRecaptchaChange;
+      const tempCallback = (token: string | null) => {
+        clearTimeout(timeout);
+        console.log('✅ ReCaptcha token received:', token?.substring(0, 20) + '...');
+        originalCallback(token); // Zavoláme pôvodný callback
+        resolve(token);
+      };
+
+      // Nastavíme dočasný callback a spustíme execute
+      if (recaptchaRef.current) {
+        // Hack: pristúpime priamo k ReCaptcha instance cez ref
+        const recaptchaInstance = (recaptchaRef.current as any).recaptchaRef?.current;
+        if (recaptchaInstance) {
+          recaptchaInstance.props.onChange = tempCallback;
         }
+        recaptchaRef.current.execute();
+      } else {
+        clearTimeout(timeout);
+        reject(new Error('ReCaptcha ref not available'));
       }
+    });
+
+    try {
+      const captchaToken = await tokenPromise;
       
       if (!captchaToken) {
-        console.error('❌ ReCaptcha token not received after execute');
         toast({
           title: "ReCaptcha overenie",
           description: "ReCaptcha overenie zlyhalo. Skúste to znovu.",
@@ -76,12 +98,8 @@ export function useRegistrationForm({ selectedDate, onComplete }: UseRegistratio
         });
         return null;
       }
-      
-      console.log('✅ ReCaptcha token received:', captchaToken?.substring(0, 20) + '...');
-    }
 
-    // ReCaptcha validácia - len ak je nastavená
-    if (recaptchaSettings?.site_key && captchaToken) {
+      // Validácia cez edge function
       console.log('🔐 Validating ReCaptcha token...');
       
       const recaptchaResponse = await supabase.functions.invoke('validate-recaptcha', {
@@ -108,9 +126,17 @@ export function useRegistrationForm({ selectedDate, onComplete }: UseRegistratio
       }
       
       console.log('✅ ReCaptcha validation successful');
-    }
+      return captchaToken;
 
-    return captchaToken;
+    } catch (error) {
+      console.error('❌ ReCaptcha error:', error);
+      toast({
+        title: "ReCaptcha overenie",
+        description: "ReCaptcha overenie zlyhalo. Skúste to znovu.",
+        variant: "destructive",
+      });
+      return null;
+    }
   };
 
   const registerUser = async () => {
@@ -185,7 +211,7 @@ export function useRegistrationForm({ selectedDate, onComplete }: UseRegistratio
 
     try {
       const captchaToken = await handleReCaptchaValidation();
-      if (recaptchaSettings?.site_key && !captchaToken) {
+      if (recaptchaSettings?.site_key && captchaToken === null) {
         setIsSubmitting(false);
         return;
       }
