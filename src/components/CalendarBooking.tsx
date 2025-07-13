@@ -190,15 +190,15 @@ export function CalendarBooking({ selectedDate, onDateSelect }: CalendarBookingP
             <div className="text-xs text-muted-foreground space-y-1">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-muted rounded"></div>
-                <span>Dostupné dni</span>
+                <span>Maximálna kapacita: 5 ľudí na kurz</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-destructive/20 rounded"></div>
-                <span>Obsadené (5/5)</span>
+                <span>Dostupné dni: streda, štvrtok, piatok</span>
               </div>
                <div className="flex items-center gap-2">
                 <AlertTriangle className="w-3 h-3 text-muted-foreground" />
-                <span>Dostupné len streda, štvrtok a piatok</span>
+                <span>Vždy od 9:00 do 17:00</span>
                </div>
             </div>
           </div>
