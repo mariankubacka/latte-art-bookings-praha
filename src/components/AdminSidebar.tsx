@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const items = [
   { title: "Štatistiky", url: "/admin", icon: BarChart3 },
@@ -19,8 +20,16 @@ const items = [
 ];
 
 export function AdminSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpen } = useSidebar();
   const collapsed = state === "collapsed";
+  const isMobile = useIsMobile();
+
+  // Handle menu item click - close sidebar on mobile
+  const handleMenuItemClick = () => {
+    if (isMobile) {
+      setOpen(false);
+    }
+  };
 
   return (
     <Sidebar className={`${collapsed ? "w-14" : "w-60"} border-r border-primary/20 bg-card shadow-sm`} collapsible="icon">
@@ -34,6 +43,7 @@ export function AdminSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
+                      onClick={handleMenuItemClick}
                       className={({ isActive }) =>
                         isActive ? "bg-muted border-r-2 border-r-primary/50 font-medium" : "hover:bg-muted/50"
                       }
