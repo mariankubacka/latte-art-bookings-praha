@@ -43,12 +43,7 @@ const Index = () => {
       <AdminLoginPopup isOpen={isAdminLoginOpen} onOpenChange={setIsAdminLoginOpen} />
 
       {/* Hero Section */}
-      <section className="py-20 px-4 relative min-h-[80vh] flex items-center" style={{
-      backgroundImage: `url('/lovable-uploads/baa00580-19f7-46c9-888d-6fe25505ec0e.png')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
-    }}>
+      <section className="py-20 px-4 relative min-h-[80vh] flex items-center hero-background">
         {/* Dark overlay for readability */}
         <div className="absolute inset-0 bg-black/40"></div>
         
