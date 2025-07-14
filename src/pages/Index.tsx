@@ -108,7 +108,7 @@ const Index = () => {
             <div className="animate-fade-in">
               <h3 className="text-xl font-semibold mb-4">Základné techniky</h3>
               <ul className="space-y-2 text-muted-foreground">
-                <li>• Správne napěňování mléka</li>
+                <li>• Správne napěňovanie mlieka</li>
                 <li>• Základy kreslenia v káve</li>
                 <li>• Tvorba srdca a rozety</li>
                 <li>• Práca s rôznymi typmi mlieka</li>
