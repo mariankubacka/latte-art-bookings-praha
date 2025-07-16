@@ -32,7 +32,10 @@ export function AdminSidebar() {
   };
 
   return (
-    <Sidebar className={`${collapsed ? "w-14" : "w-60"} border-r border-primary/20 bg-card shadow-sm`} collapsible="icon">
+    <Sidebar 
+      className={`${collapsed && !isMobile ? "w-14" : "w-60"} border-r border-primary/20 bg-card shadow-sm`} 
+      collapsible={isMobile ? "offcanvas" : "icon"}
+    >
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="font-semibold">Admin Panel</SidebarGroupLabel>
@@ -49,7 +52,8 @@ export function AdminSidebar() {
                       }
                     >
                       <item.icon className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {/* Na mobile vždy zobraz text, na desktop len ak nie je collapsed */}
+                      {(isMobile || !collapsed) && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
